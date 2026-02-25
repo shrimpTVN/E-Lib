@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <section class="bg-gray-100 min-h-screen">
+      <div class="user-infor-container grid grid-cols-[25%_75%] max-w-7xl mx-auto py-8">
+        <div class="user-infor-sidebar border bg-white border-gray-300 pb-4 min-h-screen">
+          <div class="avartar-container *:text-center">
+            <!-- user avatar -->
+            <div
+              class="p-4 mb-4 bg-sky-200 rounded-tl-lg rounded-tr-lg w-36 h-40 rounded-xl mx-auto mt-4"
+            ></div>
+            <h3 class="font-bold text-gray-700 text-xl">Trần Văn Nghĩa</h3>
+            <p class="text-gray-500 text-base">Điểm tích lũy: 10 điểm</p>
+            <div class="w-[80%] mx-auto bg-gray-400 h-[1px] mt-10"></div>
+          </div>
+
+          <div class="infor-list-container mt-6">
+            <ul class="mx-4 px-2 text-gray-600 font-bold *:p-2 *:rounded-lg">
+              <li class="hover:bg-sky-50 cursor-pointer">Hố sơ cá nhân</li>
+              <li class="hover:bg-sky-50 cursor-pointer">Tài khoản</li>
+              <li class="hover:bg-sky-50 cursor-pointer">Lịch sử mượn sách</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="infor-container bg-white border border-gray-300 ml-4 p-6 max-h-[80%]">
+          <div class="user-infor">
+            <h2 class="text-2xl font-bold text-gray-800">Thông tin cá nhân</h2>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

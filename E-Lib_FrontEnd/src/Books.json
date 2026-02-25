@@ -1,0 +1,130 @@
+{
+  "Sach": [
+    {
+      "id": "1",
+      "maSach": "S001",
+      "tenSach": "101 Mẹo đối phó với xếp",
+      "donGia": "59500",
+      "soQuyen": "2",
+      "namXuatBan": "12-2017",
+      "maNXB": "NXB001",
+      "tacGia": "Minh Phượng",
+      "moTa": " Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum.Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum."
+    },
+    {
+      "id": "2",
+      "maSach": "S002",
+      "tenSach": "Người đàn ông mang tên OVE",
+      "donGia": "136000",
+      "soQuyen": "2",
+      "namXuatBan": "2022",
+      "maNXB": "NXB002",
+      "tacGia": "Fredrik Backman",
+      "moTa": " Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum.Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum."
+    },
+    {
+      "id": "3",
+      "maSach": "S003",
+      "tenSach": "Tối Giản Lối Sống Tối Ưu Cuộc Đời - 7 Trụ Cột Của Cuộc Sống Hạnh Phúc Và Ý Nghĩa ",
+      "donGia": "85000",
+      "soQuyen": "2",
+      "namXuatBan": "2022",
+      "maNXB": "NXB003",
+      "tacGia": "Joshua Fields Millburn, Ryan Nicodemus",
+      "moTa": " Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum.Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum."
+    },
+    {
+      "id": "4",
+      "maSach": "S004",
+      "tenSach": "Tâm Lý Học Về Tiền ",
+      "donGia": "151000",
+      "soQuyen": "2",
+      "namXuatBan": "2022",
+      "maNXB": "NXB003",
+      "tacGia": "Morgan Housel ",
+      "moTa": " Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum.Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum."
+    },
+    {
+      "id": "5",
+      "maSach": "S005",
+      "tenSach": "Một đời quản trị",
+      "donGia": "170000",
+      "soQuyen": "2",
+      "namXuatBan": "2022",
+      "maNXB": "NXB002",
+      "tacGia": "Phan Văn Trường",
+      "moTa": " Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum.Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum."
+    },
+    {
+      "id": "6",
+      "maSach": "S006",
+      "tenSach": "Nghệ Thuật Thăng Tiến Nơi Công Sở - Thriving At Work",
+      "donGia": "129350",
+      "soQuyen": "2",
+      "namXuatBan": "2020",
+      "maNXB": "NXB004",
+      "tacGia": "Michael Dam ",
+      "moTa": " Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum.Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. \n Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. \n Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum. \nLorem ipsum dolor, sit amet consectetur adipisicing elit. Perferendis itaque maiores dolorum commodi voluptatum iure neque quas deleniti, temporibus reprehenderit consequuntur eligendi? Eaque accusantium culpa sunt minus laudantium, fuga illum."
+    }
+  ],
+  "NhaXuatBan": [
+    {
+      "id": "1",
+      "maNXB": "NXB001",
+      "tenNXB": "Thế Giới",
+      "diaChi": ""
+    },
+    {
+      "id": "2",
+      "maNXB": "NXB002",
+      "tenNXB": "Trẻ",
+      "diaChi": ""
+    },
+    {
+      "id": "3",
+      "maNXB": "NXB003",
+      "tenNXB": "Dân Trí",
+      "diaChi": ""
+    },
+    {
+      "id": "4",
+      "maNXB": "NXB004",
+      "tenNXB": "Lao Động",
+      "diaChi": ""
+    }
+  ],
+  "DocGia": [
+    {
+      "id": "1",
+      "maDocGia": "DG001",
+      "hoLot": "Tran Van",
+      "ten": "Nghia",
+      "ngaySinh": "01-01-2000",
+      "gioiTinh": "Nam",
+      "diaChi": "123 Nguyen Trai, Ha Noi",
+      "dienThoai": "0123456789"
+    }
+  ],
+  "DanhSachYeuThich": [
+    {
+      "id": "1",
+      "maDocGia": "DG001",
+      "maSach": "S001"
+    },
+    {
+      "id": "2",
+      "maDocGia": "DG001",
+      "maSach": "S002"
+    },
+    {
+      "id": "3",
+      "maDocGia": "DG001",
+      "maSach": "S003"
+    },
+    {
+      "id": "4",
+      "maDocGia": "DG001",
+      "maSach": "S004"
+    }
+  ]
+}
