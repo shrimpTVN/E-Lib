@@ -9,7 +9,7 @@ const handleChangeTag = (tagName) => {
 
 <template>
   <section>
-    <div class="user-infor-sidebar border bg-white border-gray-300 pb-4 min-h-screen">
+    <div class="user-infor-sidebar border bg-white border-gray-300 pb-4 min-h-screen rounded-lg">
       <div class="avartar-container *:text-center">
         <!-- user avatar -->
         <div

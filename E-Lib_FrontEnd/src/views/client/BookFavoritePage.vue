@@ -1,7 +1,7 @@
 <script setup>
 import FavoriteService from '@/services/favorite.service.js'
 import { ref, onMounted } from 'vue'
-import UserService from '@/services/user.serivce.js'
+import UserService from '@/services/user.service.js'
 import IsLoading from '@/components/IsLoading.vue'
 
 const userID = ref('1') // TODO: Replace with actual user ID from authentication

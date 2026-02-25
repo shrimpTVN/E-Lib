@@ -102,7 +102,15 @@
       "ngaySinh": "01-01-2000",
       "gioiTinh": "Nam",
       "diaChi": "123 Nguyen Trai, Ha Noi",
-      "dienThoai": "0123456789"
+      "dienThoai": "0923456789"
+    }
+  ],
+  "TaiKhoan": [
+    {
+      "id": "1",
+      "maDocGia": "DG001",
+      "tenDangNhap": "vannghia",
+      "matKhau": "123123"
     }
   ],
   "DanhSachYeuThich": [

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import bookService from '@/services/book.service.js'
 import publisherService from '@/services/publisher.service.js'
@@ -12,6 +12,7 @@ const publisher = ref(null)
 const loading = ref(true)
 const error = ref(null)
 const isLimit = ref(true)
+// const bookId= ref(route.params.id);
 
 // Event handler
 const handleLimitChange = () => {
@@ -28,9 +29,9 @@ const handleBorrowNow = () => {
   console.log('Borrow now:', book.value)
 }
 
-onMounted(async () => {
+// methods
+const loadBook = async (bookId) => {
   try {
-    const bookId = route.params.id
     if (!bookId) {
       error.value = 'Book ID not found'
       return
@@ -50,7 +51,18 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(async () => {
+  await loadBook(route.params.id)
 })
+
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (newId && newId !== oldId) loadBook(newId)
+  },
+)
 </script>
 
 <template>
