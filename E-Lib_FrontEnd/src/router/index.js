@@ -1,18 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ClientHomePage from '@/views/client/ClientHomePage.vue'
+
 import AdminHomePage from '@/views/admin/AdminHomePage.vue'
 import NotFoundPage from '@/views/NotFoundPage.vue'
+import ClientLayout from '@/views/client/ClientLayout.vue'
 
 const clientRouter = [
   {
     path: '/',
-    name: 'client-home-page',
-    component: ClientHomePage,
+    name: 'client-layout',
+    component: ClientLayout,
     children: [
       {
         path: 'books',
         name: 'book-list-page',
         component: () => import('@/views/client/BookListPage.vue'),
+      },
+      {
+        path: '',
+        name: 'home-page',
+        component: () => import('@/views/client/ClientHomePage.vue'),
       },
       {
         path: 'books/:id',
