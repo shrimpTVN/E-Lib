@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AdminHomePage from '@/views/admin/AdminHomePage.vue'
 import NotFoundPage from '@/views/NotFoundPage.vue'
 import ClientLayout from '@/views/client/ClientLayout.vue'
+import LoginForm from '@/components/login/LoginForm.vue'
+import RegisterForm from '@/components/login/RegistorForm.vue'
 
 const clientRouter = [
   {
@@ -41,6 +43,26 @@ const clientRouter = [
         component: () => import('@/views/client/UserInforPage.vue'),
       },
     ],
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/Login.vue'),
+    props: {
+      title: 'Đăng nhập',
+      desc: 'Bạn cần tài khoản CTU để đăng nhập.',
+      formType: LoginForm,
+    },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('../views/Login.vue'),
+    props: {
+      title: 'Đăng ký',
+      desc: 'Trang này giúp bạn tạo tài khoản. Vui lòng cung cấp đầy đủ thông tin.',
+      formType: RegisterForm,
+    },
   },
 ]
 
