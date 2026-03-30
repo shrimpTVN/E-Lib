@@ -10,6 +10,7 @@ const readerSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true }, // Remember to hash this with bcrypt!
     diemTichLuy: { type: Number, default: 0 },
+    ngaySinh: { type: Date },
   },
   { timestamps: true },
 );
