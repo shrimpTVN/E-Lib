@@ -1,15 +1,10 @@
 <script setup>
-import PublisherService from '@/services/publisher.service.js'
-import { ref, onMounted } from 'vue'
-
 const props = defineProps({
   book: {
     type: Object,
     required: true,
   },
 })
-
-const publisher = ref(null)
 </script>
 
 <template>

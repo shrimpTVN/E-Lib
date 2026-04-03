@@ -14,7 +14,7 @@ const props = defineProps({
   <section class="mt-6 mx-4">
     <div class="book-list-container">
       <div class="grid grid-cols-4 gap-1">
-        <BookCard v-for="book in books" :key="book.id" :book="book" />
+        <BookCard v-for="book in books" :key="book._id" :book="book" />
       </div>
     </div>
   </section>

@@ -1,7 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth.store'
+import { storeToRefs } from 'pinia'
 
-const userID = ref(1) // TODO: Replace with actual user ID from authentication
+const authStore = useAuthStore()
+
+const { isAuthenticated, user } = storeToRefs(authStore)
 </script>
 
 <template>
@@ -34,14 +37,23 @@ const userID = ref(1) // TODO: Replace with actual user ID from authentication
     </div>
 
     <!-- Icons Section -->
-    <div class="flex items-center gap-6 text-2xl text-white font-bold">
+    <div v-if="isAuthenticated" class="flex items-center gap-6 text-2xl text-white font-bold">
       <router-link to="/favorite">
         <i class="pi pi-heart hover:text-red-600 cursor-pointer transition-colors"></i>
       </router-link>
 
-      <router-link :to="`/users/${userID}`">
+      <router-link :to="`/readers/${user.id}`">
         <i class="pi pi-user hover:text-blue-600 cursor-pointer transition-colors px-4"></i>
       </router-link>
+    </div>
+    <div v-else class="login-btn-container text-white">
+      <router-link to="/login" class="px-2 py-2 transition-colors rounded-md hover:bg-blue-600"
+        >Đăng nhập</router-link
+      >
+      |
+      <router-link to="/register" class="px-2 py-2 transition-colors rounded-md hover:bg-blue-600"
+        >Đăng ký</router-link
+      >
     </div>
   </div>
 </template>

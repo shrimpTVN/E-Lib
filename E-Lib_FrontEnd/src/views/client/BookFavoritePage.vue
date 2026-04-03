@@ -1,7 +1,6 @@
 <script setup>
-import FavoriteService from '@/services/favorite.service.js'
 import { ref, onMounted } from 'vue'
-import UserService from '@/services/user.service.js'
+
 import IsLoading from '@/components/IsLoading.vue'
 
 const userID = ref('1') // TODO: Replace with actual user ID from authentication
@@ -10,8 +9,8 @@ const isLoading = ref(true)
 
 onMounted(async () => {
   try {
-    const favorites = await FavoriteService.getAll()
-    const user = await UserService.get(userID.value)
+    const favorites = await api.get('/favorites')
+    const user = await api.get(`/readers/${userID.value}`)
     favoriteList.value = favorites.filter((favorite) => favorite.maDocGia === user.maDocGia)
   } catch (err) {
     console.log('Error while fetching data', err)

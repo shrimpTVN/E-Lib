@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       // Calls the backend to check if the HttpOnly cookie is still valid
-      const response = await axios.get('/api/me', { user })
+      const response = await axios.get('/me', { user })
       user.value = response.data.user
     } catch (error) {
       // If 401 Unauthorized, it means no valid cookie
@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Action to handle logout globally
   const logout = async () => {
     try {
-      await axios.post('/api/login/logout')
+      await axios.post('/login/logout')
       user.value = null // Clear state on success
     } catch (error) {
       console.error('Logout failed', error)

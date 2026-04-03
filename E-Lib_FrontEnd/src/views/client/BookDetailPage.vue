@@ -1,10 +1,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import bookService from '@/services/book.service.js'
-import publisherService from '@/services/publisher.service.js'
 import BookList from '@/components/BookList.vue'
 import IsLoading from '@/components/IsLoading.vue'
+import api from '@/api/axios.js'
 
 const route = useRoute()
 const book = ref(null)
@@ -12,7 +11,6 @@ const relatedBooks = ref([])
 const loading = ref(true)
 const error = ref(null)
 const isLimit = ref(true)
-// const bookId= ref(route.params.id);
 
 // Event handler
 const handleLimitChange = () => {
@@ -36,12 +34,11 @@ const loadBook = async (bookId) => {
       error.value = 'Book ID not found'
       return
     }
-
+    console.log('-----Loading book with ID:', bookId)
     // Fetch book details and related books in one request
-    const res = await bookService.get(bookId)
-    console.log('Book details response:', res)
-    book.value = res.book
-    relatedBooks.value = res.relatedBooks
+    const res = await api.get(`/books/${bookId}`)
+    book.value = res.data.book
+    relatedBooks.value = res.data.relatedBooks
   } catch (err) {
     error.value = 'Failed to load book details'
     console.error(err)

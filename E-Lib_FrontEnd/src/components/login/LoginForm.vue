@@ -6,9 +6,11 @@ import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import api from '@/api/axios'
 import { jwtDecode } from 'jwt-decode'
+import { useAuthStore } from '@/stores/auth.store'
 
 const toast = useToast()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
@@ -62,6 +64,8 @@ const handleLogin = async () => {
       } else {
         router.push('/')
       }
+
+      authStore.setUser(decoded)
 
       submitSuccess.value = res.data.message || 'Đăng nhập thành công'
     } else {

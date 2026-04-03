@@ -37,7 +37,7 @@ const clientRouter = [
         component: () => import('@/views/client/BorrowHistoryPage.vue'),
       },
       {
-        path: 'users/:id',
+        path: 'readers/:id',
         name: 'user-infor-page',
         component: () => import('@/views/client/UserInforPage.vue'),
       },

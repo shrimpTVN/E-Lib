@@ -1,9 +1,9 @@
 <script setup>
 import BookFilter from '@/components/BookFilter.vue'
 import BookList from '@/components/BookList.vue'
-import BookService from '@/services/book.service'
 import IsLoading from '@/components/IsLoading.vue'
 import { ref, onMounted } from 'vue'
+import api from '@/api/axios.js'
 
 const books = ref([])
 const filteredBooks = ref([])
@@ -15,12 +15,12 @@ const isLoading = ref(true)
 
 onMounted(async () => {
   try {
-    const response = await BookService.getAll()
-    books.value = response.data
-    filteredBooks.value = response.data
-    publisherNames.value = response.publisherNames
-    types.value = response.types
-    authors.value = response.authors
+    const response = await api.get('/books')
+
+    filteredBooks.value = response.data.books
+    publisherNames.value = response.data.publisherNames
+    types.value = response.data.types
+    authors.value = response.data.authors
   } catch (err) {
     console.log(err)
   } finally {
