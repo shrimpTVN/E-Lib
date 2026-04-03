@@ -7,8 +7,8 @@ import readerRoute from "./reader.route.js";
 import staffRoute from "./staff.route.js";
 
 const router = (app) => {
-  app.use("/login", loginRoute);
-  app.use("/register", registerRoute);
+  app.use("/api/login", loginRoute);
+  app.use("/api/register", registerRoute);
   app.use("/api/books", bookRoute);
   app.use("/api/borrowings", borrowingRoute);
   app.use("/api/favorites", favoriteRoute);

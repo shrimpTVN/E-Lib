@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const loanSchema = new mongoose.Schema(
   {
-    maDocGia: {
+    idDocGia: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Reader",
       required: true,
     },
-    maSach: {
+    idSach: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Book",
       required: true,
@@ -25,10 +25,10 @@ const loanSchema = new mongoose.Schema(
           required: true,
         },
         ngayTao: { type: Date, default: Date.now },
-        // Reference to the Employee who updated this status
-        maNhanVien: {
+        // Reference to the Staff member who updated this status
+        idNhanVien: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Employee",
+          ref: "Staff",
           required: true,
         },
       },
@@ -38,6 +38,6 @@ const loanSchema = new mongoose.Schema(
 );
 
 // Index to quickly find active loans for a specific reader
-loanSchema.index({ maDocGia: 1, "TRANG_THAI.tenTrangThai": 1 });
+loanSchema.index({ idDocGia: 1, "TRANG_THAI.tenTrangThai": 1 });
 
 export default mongoose.model("Loan", loanSchema, "THEO_DOI_MUON_SACH");

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import * as bookService from "../service/book.service.js";
+import * as publisherService from "../service/publisher.service.js";
 import AppError from "../utils/ApiError.js";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -15,8 +16,14 @@ export const createBook = async (req, res, next) => {
 
 export const getAllBooks = async (req, res, next) => {
   try {
-    const result = await bookService.getAllBooks(req.query);
-    res.status(200).json(result);
+    console.log("get all books");
+    const books = await bookService.getAllBooks(req.query);
+    const publishers = await publisherService.getAllPublishers();
+    const publisherNames = publishers.map((pub) => pub.tenNXB);
+    const types = [...new Set(books.data.map((book) => book.theLoai))];
+    const authors = [...new Set(books.data.map((book) => book.tacGia))];
+
+    res.status(200).json({ ...books, publisherNames, types, authors });
   } catch (error) {
     next(new AppError(error.message, 500));
   }
@@ -29,12 +36,12 @@ export const getBookById = async (req, res, next) => {
       return next(new AppError("Book ID không hợp lệ", 400));
     }
 
-    const item = await bookService.getBookById(id);
-    if (!item) {
+    const book = await bookService.getBookById(id);
+    if (!book) {
       return next(new AppError("Không tìm thấy sách", 404));
     }
-
-    res.status(200).json(item);
+    const relatedBooks = await bookService.getRelatedBooks(book);
+    res.status(200).json({ book: book, relatedBooks: relatedBooks });
   } catch (error) {
     next(new AppError(error.message, 500));
   }

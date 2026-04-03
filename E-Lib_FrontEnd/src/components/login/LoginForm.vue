@@ -1,15 +1,23 @@
 <script setup>
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import * as yup from 'yup'
-import api from '@/api/axios.js'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+import api from '@/api/axios'
+import { jwtDecode } from 'jwt-decode'
 
-const { username, password } = ref({
-  username: '',
-  password: '',
-})
+const toast = useToast()
+const router = useRouter()
+
+const username = ref('')
+const password = ref('')
+const submitError = ref('')
+const submitSuccess = ref('')
+const isSubmitting = ref(false)
 
 const loginSchema = yup.object({
-  email: yup.string().trim().required('Vui long nhap email').email('Email khong dung dinh dang'),
+  email: yup.string().trim().required('Vui long nhap tên đăng nhập'),
   password: yup
     .string()
     .required('Vui long nhap mat khau')
@@ -35,18 +43,34 @@ const socialLoginMethods = [
 ]
 
 const handleLogin = async () => {
+  submitError.value = ''
+  submitSuccess.value = ''
+  isSubmitting.value = true
+
   try {
-    const res = await api.post('login', { email: email.value, password: password.value })
+    console.log('Submitting with:', username.value, password.value)
+    const res = await api.post('/login', {
+      username: username.value,
+      password: password.value,
+    })
 
     if (res.data.token) {
-      localStorage.setItem('token', res.data.token)
-      // Logic giải mã payload để lấy role như bạn đã làm
-      const payload = JSON.parse(atob(res.data.token.split('.')[1]))
-      authorizationLink.value = payload.role === 'admin' ? '/admin' : '/'
-      // centerDialogVisible.value = true
+      const decoded = jwtDecode(res.data.token)
+
+      if (decoded.role === 'admin' || decoded.role === 'staff') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/')
+      }
+
+      submitSuccess.value = res.data.message || 'Đăng nhập thành công'
+    } else {
+      submitError.value = res.data.message || 'Đăng nhập thất bại'
     }
   } catch (error) {
-    open(error.response?.data?.message || 'Lỗi kết nối', 'error')
+    toast.error(error.response?.data?.message || 'Lỗi kết nối')
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -70,7 +94,7 @@ const handleSocialLogin = (provider) => {
     <div
       class="relative z-10 w-full max-w-[460px] rounded-[18px] bg-white px-[18px] py-[22px] shadow-[0_30px_65px_rgba(5,17,28,0.35)] sm:rounded-3xl sm:p-7"
     >
-      <div class="mb-5">
+      <div class="mb-5 form-header">
         <p class="m-0 text-xs font-bold tracking-[1.8px] text-[#0f6cbf]">E-LIBRARY CTU</p>
         <h1 class="my-2 text-[26px] leading-[1.2] text-[#13263a] sm:text-[30px]">Dang nhap</h1>
         <p class="m-0 text-[#5e7186]">Su dung email va mat khau de truy cap tai khoan cua ban.</p>
@@ -103,11 +127,19 @@ const handleSocialLogin = (provider) => {
           <ErrorMessage name="password" class="text-[13px] text-[#d63649]" />
         </div>
 
+        <p v-if="submitError" class="rounded-lg bg-[#fff1f2] px-3 py-2 text-sm text-[#be123c]">
+          {{ submitError }}
+        </p>
+        <p v-if="submitSuccess" class="rounded-lg bg-[#f0fdf4] px-3 py-2 text-sm text-[#166534]">
+          {{ submitSuccess }}
+        </p>
+
         <button
           class="mt-0.5 rounded-xl bg-[#0f6cbf] p-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-[#0a528f]"
           type="submit"
+          :disabled="isSubmitting"
         >
-          Dang nhap
+          {{ isSubmitting ? 'Đang xử lý...' : 'Đăng nhập' }}
         </button>
       </Form>
 

@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import AdminHomePage from '@/views/admin/AdminHomePage.vue'
 import NotFoundPage from '@/views/NotFoundPage.vue'
 import ClientLayout from '@/views/client/ClientLayout.vue'
 import LoginForm from '@/components/login/LoginForm.vue'
@@ -68,9 +67,9 @@ const clientRouter = [
 
 const adminRouter = [
   {
-    path: '/admin',
+    path: '/admin/dashboard',
     name: 'admin-home-page',
-    component: AdminHomePage,
+    component: () => import('../views/admin/DashBoard.vue'),
     children: [],
   },
 ]

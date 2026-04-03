@@ -9,7 +9,8 @@ export const getReaderById = async (id) => {
 };
 
 export const getReaderByEmail = async (email) => {
-  return await Reader.findOne({ email });
+  console.log("Tìm reader bằng email:", email);
+  return await Reader.findOne({ email: email });
 };
 
 export const createReader = async (readerData) => {

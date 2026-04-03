@@ -28,7 +28,7 @@ export const getAllBooks = async ({
   const skip = (parsedPage - 1) * parsedLimit;
 
   const [items, total] = await Promise.all([
-    Book.find(filter).skip(skip).limit(parsedLimit).populate("maNXB"),
+    Book.find(filter).skip(skip).limit(parsedLimit).populate("idNXB", "tenNXB"),
     Book.countDocuments(filter),
   ]);
 
@@ -41,14 +41,28 @@ export const getAllBooks = async ({
 };
 
 export const getBookById = async (id) => {
-  return await Book.findById(id).populate("maNXB");
+  return await Book.findById(id).populate("idNXB", "tenNXB");
+};
+
+export const getRelatedBooks = async (book, limit = 20) => {
+  return await Book.find()
+    .where("_id")
+    .ne(book._id)
+    .or([
+      { theLoai: book.theLoai },
+      { tacGia: book.tacGia },
+      { idNXB: book.idNXB },
+    ])
+    .populate("idNXB", "tenNXB")
+    .limit(limit)
+    .lean();
 };
 
 export const updateBook = async (id, updateData) => {
   return await Book.findByIdAndUpdate(id, updateData, {
     new: true,
     runValidators: true,
-  }).populate("maNXB");
+  }).populate("idNXB", "tenNXB");
 };
 
 export const deleteBook = async (id) => {

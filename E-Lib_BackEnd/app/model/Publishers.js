@@ -4,6 +4,7 @@ const publisherSchema = new mongoose.Schema(
   {
     // Mongoose automatically creates an _id (maps to maNXB)
     tenNXB: { type: String, required: true, trim: true },
+    maNXB: { type: String, unique: true, uppercase: true },
     diaChi: { type: String, trim: true },
   },
   { timestamps: true },

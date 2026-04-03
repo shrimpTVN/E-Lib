@@ -8,7 +8,7 @@ import IsLoading from '@/components/IsLoading.vue'
 
 const route = useRoute()
 const book = ref(null)
-const publisher = ref(null)
+const relatedBooks = ref([])
 const loading = ref(true)
 const error = ref(null)
 const isLimit = ref(true)
@@ -37,14 +37,11 @@ const loadBook = async (bookId) => {
       return
     }
 
-    // Fetch book details
-    book.value = await bookService.get(bookId)
-
-    // Fetch publisher details
-    if (book.value && book.value.maNXB) {
-      const publishers = await publisherService.getAll()
-      publisher.value = publishers.find((p) => p.maNXB === book.value.maNXB)
-    }
+    // Fetch book details and related books in one request
+    const res = await bookService.get(bookId)
+    console.log('Book details response:', res)
+    book.value = res.book
+    relatedBooks.value = res.relatedBooks
   } catch (err) {
     error.value = 'Failed to load book details'
     console.error(err)
@@ -116,13 +113,12 @@ watch(
               </div>
               <div class="flex items-start">
                 <span class="text-gray-600 font-semibold w-32">Nhà xuất bản:</span>
-                <span class="text-gray-800">{{ publisher?.tenNXB || 'Không xác định' }}</span>
+                <span class="text-gray-800">{{ book.idNXB?.tenNXB || 'Không xác định' }}</span>
               </div>
               <div class="flex items-start">
                 <span class="text-gray-600 font-semibold w-32">Năm xuất bản:</span>
                 <span class="text-gray-800">{{ book.namXuatBan }}</span>
               </div>
-
               <!-- Price Section -->
               <div class="flex items-start">
                 <span class="text-gray-600 font-bold pr-2 w-32">Giá: </span>
@@ -143,15 +139,16 @@ watch(
                 <span
                   :class="[
                     'px-4 py-2 rounded-full font-medium',
-                    parseInt(book.soQuyen) > 0
+                    parseInt(book.soLuong) > 0
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800',
                   ]"
                 >
-                  {{ parseInt(book.soQuyen) > 0 ? 'Còn sách' : 'Đã mượn hết' }}
+                  {{ parseInt(book.soLuong) > 0 ? 'Còn sách' : 'Đã mượn hết' }}
                 </span>
                 <span class="text-gray-700">
-                  Số quyển: <span class="font-bold text-lg">{{ book.soQuyen }}</span>
+                  Số quyển:
+                  <span class="font-bold text-lg">{{ book.conLai }}/{{ book.soLuong }}</span>
                 </span>
               </div>
             </div>
@@ -160,14 +157,14 @@ watch(
             <div class="flex gap-4">
               <button
                 @click="handleAddToCart"
-                :disabled="parseInt(book.soQuyen) === 0"
+                :disabled="parseInt(book.soLuong) === 0"
                 class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <i class="pi pi-heart-fill"></i> Thêm vào danh sách yêu thích
               </button>
               <button
                 @click="handleBuyNow"
-                :disabled="parseInt(book.soQuyen) === 0"
+                :disabled="parseInt(book.soLuong) === 0"
                 class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <i class="pi pi-bolt"></i> Mượn ngay
@@ -185,7 +182,7 @@ watch(
               Giới thiệu sách
             </h2>
             <p class="text-gray-700 md:px-8">
-              {{ isLimit ? book.moTa.substring(0, 400) + '...' : book.moTa }}
+              {{ isLimit ? book.gioiThieu.substring(0, 400) + '...' : book.gioiThieu }}
             </p>
             <div class="text-center">
               <button @click="handleLimitChange" class="text-blue-600 hover:underline font-medium">
@@ -199,7 +196,7 @@ watch(
       <!-- Book suggest relevant list -->
       <div v-if="book && !loading" class="mt-12">
         <h2 class="text-2xl font-bold text-blue-600 mb-6 text-center underline">Sách liên quan</h2>
-        <BookList />
+        <BookList :books="relatedBooks" />
       </div>
     </div>
   </section>
