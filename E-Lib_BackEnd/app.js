@@ -9,6 +9,7 @@ import { verifyToken } from "./app/middleware/auth.middleware.js";
 const app = express();
 
 app.use(express.json()); // Middleware to parse JSON bodies
+
 app.use(
   cors({
     origin: "http://localhost:3001", // URL của frontend

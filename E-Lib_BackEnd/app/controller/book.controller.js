@@ -16,14 +16,14 @@ export const createBook = async (req, res, next) => {
 
 export const getAllBooks = async (req, res, next) => {
   try {
-    console.log("get all books");
+    // console.log("get all books");
     const books = await bookService.getAllBooks(req.query);
     const publishers = await publisherService.getAllPublishers();
     const publisherNames = publishers.map((pub) => pub.tenNXB);
     const types = [...new Set(books.data.map((book) => book.theLoai))];
     const authors = [...new Set(books.data.map((book) => book.tacGia))];
 
-    res.status(200).json({ ...books, publisherNames, types, authors });
+    res.status(200).json({ books: books.data, publisherNames, types, authors });
   } catch (error) {
     next(new AppError(error.message, 500));
   }

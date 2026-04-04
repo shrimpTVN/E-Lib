@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import * as readerService from "../service/reader.service.js";
 import AppError from "../utils/ApiError.js";
+import bcrypt from "bcryptjs";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -60,6 +61,41 @@ export const updateReader = async (req, res, next) => {
     }
 
     res.status(200).json(sanitizeReader(updated));
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { currentPass, newPass } = req.body;
+    if (!isValidObjectId(id)) {
+      return next(new AppError("Reader ID không hợp lệ", 400));
+    }
+
+    const user = await readerService.getReaderById(id);
+    if (!user) {
+      return next(new AppError("Không tìm thấy độc giả", 404));
+    }
+
+    console.log("Đổi mật khẩu", { id, currentPass, newPass });
+    console.log("User hiện tại", user);
+
+    const isMatched = await bcrypt.compare(currentPass, user.password);
+    if (!isMatched) {
+      res
+        .status(200)
+        .json({ message: "Mật khẩu hiện tại không đúng!", type: "error" });
+      return;
+    }
+
+    user.password = newPass;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Mật khẩu đã được cập nhật", type: "success" });
   } catch (error) {
     next(new AppError(error.message, 400));
   }

@@ -27,6 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = response.data.user
     } catch (error) {
       // If 401 Unauthorized, it means no valid cookie
+      console.error('Authentication failed:', error)
       user.value = null
     } finally {
       isLoading.value = false

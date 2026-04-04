@@ -15,7 +15,7 @@ export const verifyToken = (req, res, next) => {
   // 1. Extract the token from the incoming cookie
   // Note: This requires 'cookie-parser' to be configured in your app.js
   const token = req.cookies.token;
-
+  // console.log("Token from cookie:", token);
   // 2. If no token is found, block the request
   if (!token) {
     return res.status(401).json({
@@ -30,8 +30,10 @@ export const verifyToken = (req, res, next) => {
 
     // 4. Attach the payload data to the request object
     // This makes req.userId and req.userRole available to your controllers
-    req.userId = decoded.id;
-    req.userRole = decoded.role;
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+    };
 
     // 5. Pass control to the next middleware or the main controller function
     next();
@@ -54,6 +56,7 @@ export const verifyToken = (req, res, next) => {
 export function onlyAdmin(req, res, next) {
   const token = req.cookies.token;
   const decoded = decodedToken(token);
+  console.log("Decoded token:", decoded);
   if (!decoded || decoded.role !== "admin") {
     return res.status(403).json({ message: "Không có quyền admin" });
   }

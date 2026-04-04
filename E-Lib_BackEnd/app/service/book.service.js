@@ -48,11 +48,7 @@ export const getRelatedBooks = async (book, limit = 20) => {
   return await Book.find()
     .where("_id")
     .ne(book._id)
-    .or([
-      { theLoai: book.theLoai },
-      { tacGia: book.tacGia },
-      { idNXB: book.idNXB },
-    ])
+    .or([{ theLoai: book.theLoai }, { tacGia: book.tacGia }])
     .populate("idNXB", "tenNXB")
     .limit(limit)
     .lean();

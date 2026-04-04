@@ -1,5 +1,16 @@
 <script setup>
+import { ref } from 'vue'
+
 const emit = defineEmits(['handleChangeTag'])
+
+const props = defineProps({
+  user: {
+    type: Object,
+    required: true,
+  },
+})
+
+console.log('User data in sidebar:', props.user)
 
 const handleChangeTag = (tagName) => {
   // console.log(tagName)
@@ -15,8 +26,12 @@ const handleChangeTag = (tagName) => {
         <div
           class="p-4 mb-4 bg-sky-200 rounded-tl-lg rounded-tr-lg w-36 h-40 rounded-xl mx-auto mt-4"
         ></div>
-        <h3 class="font-bold text-gray-700 text-xl">Trần Văn Nghĩa</h3>
-        <p class="text-gray-500 text-base">Điểm tích lũy: 10 điểm</p>
+        <h3 class="font-bold text-gray-700 text-xl">
+          {{ props.user.hoLot + ' ' + props.user.ten }}
+        </h3>
+        <p class="text-gray-500 text-base">Điểm tích lũy: {{ props.user.diemTichLuy }}</p>
+        <p class="text-gray-500 text-base">Số tiền phạt: {{ props.user.tienPhat }}</p>
+        <p class="text-gray-500 text-base">Số ngày phạt: 0</p>
         <div class="w-[80%] mx-auto bg-gray-400 h-[1px] mt-10"></div>
       </div>
 

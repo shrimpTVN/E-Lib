@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import * as staffService from "../service/staff.service.js";
 import * as readerService from "../service/reader.service.js";
 import config from "../config/index.js";
-
 const createToken = (payload) => {
   // 4. Ký Token
   if (!config.auth.jwtSecret) {
@@ -51,7 +50,7 @@ export const login = async (req, res, next) => {
 
     // create cookie
     const day = 24 * 60 * 60 * 1000; // 1 ngày
-    res.cookie("jwt", token, { httpOnly: true, maxAge: day * 3 });
+    res.cookie("token", token, { httpOnly: true, maxAge: day * 3 });
 
     res.json({
       user,
