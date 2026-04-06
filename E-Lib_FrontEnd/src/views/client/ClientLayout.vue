@@ -6,7 +6,7 @@ import Header from '@/components/Header.vue'
 <template>
   <Header></Header>
 
-  <section>
+  <section class="max-w-[1440px] mx-auto">
     <router-view />
   </section>
 

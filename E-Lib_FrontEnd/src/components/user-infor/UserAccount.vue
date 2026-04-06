@@ -131,7 +131,7 @@ const handlePasswordChange = async () => {
             />
           </div>
 
-          <Message v-if="isSubmitError" severity="error" class="w-[30%] mx-auto"
+          <Message v-if="isSubmitError" severity="error" class="w-[30%] mx-auto" variant="simple"
             >Mật khẩu không đúng</Message
           >
 
