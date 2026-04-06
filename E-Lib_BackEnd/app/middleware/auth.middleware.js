@@ -53,7 +53,7 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
-export function onlyAdmin(req, res, next) {
+export function isAdmin(req, res, next) {
   const token = req.cookies.token;
   const decoded = decodedToken(token);
   console.log("Decoded token:", decoded);
@@ -63,7 +63,25 @@ export function onlyAdmin(req, res, next) {
   next();
 }
 
-export function onlyUser(req, res, next) {
+export function isStuff(req, res, next) {
+  const token = req.cookies.token;
+  const decoded = decodedToken(token);
+  if (!decoded || decoded.role !== "stuff") {
+    return res.status(403).json({ message: "Không có quyền stuff" });
+  }
+  next();
+}
+
+export function isAdminOrStuff(req, res, next) {
+  const token = req.cookies.token;
+  const decoded = decodedToken(token);
+  if (!decoded || (decoded.role !== "admin" && decoded.role !== "stuff")) {
+    return res.status(403).json({ message: "Không có quyền admin hoặc stuff" });
+  }
+  next();
+}
+
+export function isUser(req, res, next) {
   const token = req.cookies.token;
   const decoded = decodedToken(token);
   if (!decoded || decoded.role !== "user") {
@@ -72,4 +90,4 @@ export function onlyUser(req, res, next) {
   next();
 }
 
-export default { verifyToken, onlyAdmin, onlyUser };
+export default { verifyToken, isAdmin, isStuff, isAdminOrStuff, isUser };

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 const readerSchema = new mongoose.Schema(
   {
     maDocGia: { type: String, unique: true, uppercase: true },
+    avatar: { type: String }, // URL to the reader's avatar image
     hoLot: { type: String, required: true },
     ten: { type: String, required: true },
     phai: { type: String, enum: ["Nam", "Nữ", "Khác"] },

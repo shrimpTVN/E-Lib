@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const bookSchema = new mongoose.Schema(
   {
     tenSach: { type: String, required: true, trim: true },
+    biaSach: { type: String },
     maSach: { type: String, unique: true, uppercase: true },
     theLoai: { type: String, required: true },
     gioiThieu: { type: String },
@@ -19,6 +20,7 @@ const bookSchema = new mongoose.Schema(
       ref: "Publisher",
       required: true,
     },
+    hinhAnh: { type: [String], default: [] }, // URL to the book cover image
   },
   { timestamps: true },
 );

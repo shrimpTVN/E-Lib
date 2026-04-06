@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 const staffSchema = new mongoose.Schema(
   {
     maNhanVien: { type: String, unique: true, uppercase: true },
+    avatar: { type: String }, // URL to the staff's avatar image
     hoTen: { type: String, required: true },
     chucVu: { type: String, required: true },
     dienThoai: { type: String, required: true },
