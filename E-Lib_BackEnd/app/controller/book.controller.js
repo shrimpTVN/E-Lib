@@ -7,6 +7,11 @@ const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 export const createBook = async (req, res, next) => {
   try {
+    // If a file was successfully uploaded to Cloudinary, attach the URL
+    // if (req.file) {
+    //   bookData.coverImageUrl = req.file.path;
+    // }
+
     const created = await bookService.createBook(req.body);
     res.status(201).json(created);
   } catch (error) {

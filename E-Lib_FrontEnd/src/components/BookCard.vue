@@ -12,8 +12,14 @@ const props = defineProps({
     :to="`/books/${book._id}`"
     class="book-card bg-white border border-gray-200 px-6 pb-4 rounded-tl-lg rounded-tr-lg shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out m-1"
   >
-    <div class="image-container h-48 w-full mb-4 flex items-center justify-center">
-      <span class="text-8xl text-center align-middle m-auto">📚</span>
+    <div class="image-container h-48 w-full my-4 flex items-center justify-center">
+      <img
+        v-if="book.biaSach"
+        :src="book.biaSach"
+        alt="Bìa sách"
+        class="max-h-full object-contain"
+      />
+      <span v-else class="text-8xl text-center align-middle m-auto">📚</span>
     </div>
     <h3 class="text-base font-bold text-gray-900 line-clamp-1">
       {{ book.tenSach }}

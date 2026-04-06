@@ -16,7 +16,7 @@ const isLoading = ref(true)
 onMounted(async () => {
   try {
     const response = await api.get('/books')
-
+    books.value = response.data.books
     filteredBooks.value = response.data.books
     publisherNames.value = response.data.publisherNames
     types.value = response.data.types
@@ -54,7 +54,7 @@ const handleFilter = ({ types = [], authors = [], publishers = [] }) => {
 
 <template>
   <IsLoading v-if="isLoading"></IsLoading>
-  <section v-else class="grid grid-cols-[20%_80%]">
+  <section v-else class="grid grid-cols-[20%_80%] mt-6">
     <BookFilter
       :publisher-names="publisherNames"
       :types="types"
@@ -62,6 +62,6 @@ const handleFilter = ({ types = [], authors = [], publishers = [] }) => {
       @filter="handleFilter"
     >
     </BookFilter>
-    <BookList class="border-l border-black" :books="filteredBooks"> </BookList>
+    <BookList class="" :books="filteredBooks"> </BookList>
   </section>
 </template>

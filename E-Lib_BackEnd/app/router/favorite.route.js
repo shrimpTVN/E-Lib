@@ -1,16 +1,13 @@
 import express from "express";
 import * as favoriteController from "../controller/favorite.controller.js";
+import { verifyToken, isUser } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 router
-  .route("/")
+  .route("/", verifyToken, isUser)
   .get(favoriteController.getAllFavorites)
-  .post(favoriteController.createFavorite);
-
-router
-  .route("/:id")
-  .get(favoriteController.getFavoriteById)
+  .post(favoriteController.addFavorite)
   .patch(favoriteController.updateFavorite)
   .delete(favoriteController.deleteFavorite);
 

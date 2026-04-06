@@ -10,10 +10,12 @@ const { isAuthenticated, user } = storeToRefs(authStore)
 <template>
   <div class="flex items-center justify-between px-8 py-4 bg-blue-800 shadow-md text-white-500">
     <!-- Logo Section -->
-    <div class="flex items-center gap-3">
-      <img src="/ctu-logo.png" alt="CTU Logo" class="h-10 w-10" />
-      <span class="text-xl font-bold text-white">E-Library CTU</span>
-    </div>
+    <router-link to="/">
+      <div class="flex items-center gap-3">
+        <img src="/ctu-logo.png" alt="CTU Logo" class="h-10 w-10" />
+        <span class="text-xl font-bold text-white">E-Library CTU</span>
+      </div>
+    </router-link>
 
     <!-- Navigation Tags -->
     <div>
@@ -37,13 +39,17 @@ const { isAuthenticated, user } = storeToRefs(authStore)
     </div>
 
     <!-- Icons Section -->
-    <div v-if="isAuthenticated" class="flex items-center gap-6 text-2xl text-white font-bold">
+    <div v-if="isAuthenticated" class="flex items-center gap-6 text-white font-bold">
       <router-link to="/favorite">
-        <i class="pi pi-heart hover:text-red-600 cursor-pointer transition-colors"></i>
+        <i
+          class="pi pi-heart hover:text-red-600 cursor-pointer !text-2xl block transition-colors px-4"
+        ></i>
       </router-link>
 
       <router-link :to="`/readers/${user.id}`">
-        <i class="pi pi-user hover:text-blue-600 cursor-pointer transition-colors px-4"></i>
+        <i
+          class="pi pi-user hover:text-blue-600 cursor-pointer !text-2xl block transition-colors px-4"
+        ></i>
       </router-link>
     </div>
     <div v-else class="login-btn-container text-white">

@@ -4,13 +4,31 @@ import { useRoute } from 'vue-router'
 import BookList from '@/components/BookList.vue'
 import IsLoading from '@/components/IsLoading.vue'
 import api from '@/api/axios.js'
+import Galleria from 'primevue/galleria'
+import { useAuthStore } from '@/stores/auth.store'
+import { useAppToast } from '@/utils/useToast'
 
+const { addToast } = useAppToast()
+const authStore = useAuthStore()
 const route = useRoute()
+
 const book = ref(null)
 const relatedBooks = ref([])
 const loading = ref(true)
 const error = ref(null)
 const isLimit = ref(true)
+const responsiveOptions = ref([
+  {
+    breakpoint: '1300px',
+    numVisible: 4,
+  },
+  {
+    breakpoint: '575px',
+    numVisible: 1,
+  },
+])
+const images = ref([])
+const isShowComment = ref(false)
 
 // Event handler
 const handleLimitChange = () => {
@@ -18,8 +36,18 @@ const handleLimitChange = () => {
 }
 
 const handleAddToFavorite = () => {
-  // TODO: Implement add to favorite functionality
-  console.log('Added to favorite:', book.value)
+  try {
+    const res = api.post('/favorites', {
+      idDocGia: authStore.user.id,
+      idSach: book.value._id,
+      soLuong: 1, // Default quantity to add to favorites
+    })
+
+    addToast('success', 'Thành công', 'Đã thêm vào danh sách yêu thích')
+  } catch (err) {
+    console.log('Error while adding to favorite', err)
+    addToast('error', 'Thất bại', 'Thêm vào danh sách yêu thích thất bại')
+  }
 }
 
 const handleBorrowNow = () => {
@@ -30,14 +58,28 @@ const handleBorrowNow = () => {
 // methods
 const loadBook = async (bookId) => {
   try {
+    loading.value = true
+    error.value = null
+
     if (!bookId) {
       error.value = 'Book ID not found'
       return
     }
-    console.log('-----Loading book with ID:', bookId)
-    // Fetch book details and related books in one request
+
     const res = await api.get(`/books/${bookId}`)
     book.value = res.data.book
+    if (book.value.hinhAnh.length < 5) {
+      for (let i = book.value.hinhAnh.length; i < 5; i++) {
+        book.value.hinhAnh.push(
+          'https://res.cloudinary.com/depaiphq0/image/upload/v1775474472/pngtree-an-open-book-is-shown-with-a-yellow-and-blue-logo-png-image_15675075_f99kmp.png',
+        )
+      }
+    }
+    images.value = (res.data.book?.hinhAnh || []).map((img) => ({
+      itemImageSrc: img,
+      thumbnailImageSrc: img,
+      alt: book.value.tenSach,
+    }))
     relatedBooks.value = res.data.relatedBooks
   } catch (err) {
     error.value = 'Failed to load book details'
@@ -86,13 +128,30 @@ watch(
       <div v-if="book && !loading" class="bg-white rounded-lg shadow-lg overflow-hidden">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-8">
           <!-- Book Image Section -->
-          <div class="md:col-span-1">
-            <div class="bg-gray-100 rounded-lg p-8 flex items-center justify-center h-96">
-              <div class="text-center">
-                <div class="text-6xl mb-4">📚</div>
-                <p class="text-gray-500 text-sm">Hình ảnh sách</p>
-              </div>
-            </div>
+          <div class="md:col-span-1 flex items-center justify-center bg-gray-100 rounded-lg">
+            <Galleria
+              :value="images"
+              :responsiveOptions="responsiveOptions"
+              :numVisible="5"
+              :circular="true"
+              containerStyle="max-width: 640px"
+              :showItemNavigators="true"
+            >
+              <template #item="slotProps">
+                <img
+                  :src="slotProps.item.itemImageSrc"
+                  :alt="slotProps.item.alt"
+                  style="height: 420px; display: block"
+                />
+              </template>
+              <template #thumbnail="slotProps">
+                <img
+                  :src="slotProps.item.thumbnailImageSrc"
+                  :alt="slotProps.item.alt"
+                  class="block text-gray-500 max-height-8 object-cover"
+                />
+              </template>
+            </Galleria>
           </div>
 
           <!-- Book Info Section -->
@@ -101,66 +160,96 @@ watch(
             <p class="text-xl md:text-2xl font-bold text-gray-900 mb-4 border-b pb-2">
               {{ book.tenSach }}
             </p>
+            <div class="book-nav-btn-container flex mb-6 text-blue-500 text-lg font-bold">
+              <button
+                @click="isShowComment = false"
+                :class="[
+                  !isShowComment ? 'underline text-decoration-line: underline' : '',
+                  'px-4 py-2 rounded-lg',
+                ]"
+              >
+                Thông tin sách
+              </button>
 
-            <!-- Meta Info -->
-            <div class="space-y-3 mb-2">
-              <div class="flex items-start">
-                <span class="text-gray-600 font-semibold w-32">Tác giả:</span>
-                <span class="text-blue-600 hover:underline cursor-pointer">{{ book.tacGia }}</span>
+              <button
+                @click="isShowComment = true"
+                :class="[
+                  isShowComment ? 'underline text-decoration-line: underline' : '',
+                  'px-4 py-2 rounded-lg ',
+                ]"
+              >
+                Đánh giá & Bình luận
+              </button>
+            </div>
+
+            <div v-if="!isShowComment" class="book-infor-container">
+              <!-- Meta Info -->
+              <div class="space-y-3 mb-2">
+                <div class="flex items-start">
+                  <span class="text-gray-600 font-semibold w-32">Tác giả:</span>
+                  <span class="text-gray-800">{{ book.tacGia }}</span>
+                </div>
+                <div class="flex items-start">
+                  <span class="text-gray-600 font-semibold w-32">Nhà xuất bản:</span>
+                  <span class="text-gray-800">{{ book.idNXB?.tenNXB || 'Không xác định' }}</span>
+                </div>
+                <div class="flex items-start">
+                  <span class="text-gray-600 font-semibold w-32">Năm xuất bản:</span>
+                  <span class="text-gray-800">{{ book.namXuatBan }}</span>
+                </div>
+                <!-- Price Section -->
+                <div class="flex items-start">
+                  <span class="text-gray-600 font-semibold w-32">Giá: </span>
+                  <span class="text-gray-800">
+                    {{
+                      new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                        book.donGia,
+                      )
+                    }}
+                  </span>
+                </div>
               </div>
-              <div class="flex items-start">
-                <span class="text-gray-600 font-semibold w-32">Nhà xuất bản:</span>
-                <span class="text-gray-800">{{ book.idNXB?.tenNXB || 'Không xác định' }}</span>
-              </div>
-              <div class="flex items-start">
-                <span class="text-gray-600 font-semibold w-32">Năm xuất bản:</span>
-                <span class="text-gray-800">{{ book.namXuatBan }}</span>
-              </div>
-              <!-- Price Section -->
-              <div class="flex items-start">
-                <span class="text-gray-600 font-bold pr-2 w-32">Giá: </span>
-                <span class="text-xl font-bold text-blue-600 align-middle text-center">
-                  {{
-                    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      book.donGia,
-                    )
-                  }}
-                </span>
+
+              <!-- Stock Info -->
+              <div class="mb-8">
+                <p class="text-gray-600 font-semibold mb-2">Tình trạng tủ sách:</p>
+                <div class="flex items-center gap-4">
+                  <span
+                    :class="[
+                      'px-4 py-2 rounded-full font-bold text-center',
+                      parseInt(book.soLuong) > 0
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800',
+                    ]"
+                  >
+                    {{ parseInt(book.soLuong) > 0 ? 'Còn sách' : 'Đã mượn hết' }}
+                  </span>
+                  <span class="text-gray-700 font-bold">
+                    Số quyển:
+                    <span class="font-bold text-lg">{{ book.conLai }}/{{ book.soLuong }}</span>
+                  </span>
+                </div>
               </div>
             </div>
 
-            <!-- Stock Info -->
-            <div class="mb-8">
-              <p class="text-gray-600 font-semibold mb-2">Tình trạng tủ sách:</p>
-              <div class="flex items-center gap-4">
-                <span
-                  :class="[
-                    'px-4 py-2 rounded-full font-medium',
-                    parseInt(book.soLuong) > 0
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800',
-                  ]"
-                >
-                  {{ parseInt(book.soLuong) > 0 ? 'Còn sách' : 'Đã mượn hết' }}
-                </span>
-                <span class="text-gray-700">
-                  Số quyển:
-                  <span class="font-bold text-lg">{{ book.conLai }}/{{ book.soLuong }}</span>
-                </span>
-              </div>
+            <div v-else class="comment-container">
+              <p class="font-bold text-gray-600 mb-4">
+                Đánh giá: {{ book.danhGia }}/5 <i class="pi pi-star-fill text-yellow-400"></i>
+              </p>
+              <p class="text-gray-700 text-center mb-6">Chức năng đang được phát triển...</p>
             </div>
 
             <!-- Action Buttons -->
             <div class="flex gap-4">
               <button
-                @click="handleAddToCart"
+                @click="handleAddToFavorite"
                 :disabled="parseInt(book.soLuong) === 0"
                 class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <i class="pi pi-heart-fill"></i> Thêm vào danh sách yêu thích
               </button>
               <button
-                @click="handleBuyNow"
+                @click="handleBorrowNow"
                 :disabled="parseInt(book.soLuong) === 0"
                 class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -179,7 +268,11 @@ watch(
               Giới thiệu sách
             </h2>
             <p class="text-gray-700 md:px-8">
-              {{ isLimit ? book.gioiThieu.substring(0, 400) + '...' : book.gioiThieu }}
+              {{
+                isLimit
+                  ? (book.gioiThieu || '').substring(0, 400) + (book.gioiThieu ? '...' : '')
+                  : book.gioiThieu
+              }}
             </p>
             <div class="text-center">
               <button @click="handleLimitChange" class="text-blue-600 hover:underline font-medium">

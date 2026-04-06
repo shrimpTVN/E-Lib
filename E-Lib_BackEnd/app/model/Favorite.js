@@ -7,7 +7,7 @@ const favoriteSchema = new mongoose.Schema({
     required: true,
   },
   idSach: { type: mongoose.Schema.Types.ObjectId, ref: "Book", required: true },
-  soLuong: { type: Number, required: true, min: 1 },
+  soLuong: { type: Number, required: true, default: 1 },
 });
 
-export default mongoose.model("Favorite", favoriteSchema, "FAVORITE");
+export default mongoose.model("Favorite", favoriteSchema, "YEU_THICH");

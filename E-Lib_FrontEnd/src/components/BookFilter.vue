@@ -45,7 +45,7 @@ const clearFilters = () => {
 </script>
 
 <template>
-  <section class="h-full border-r border-slate-200 bg-gradient-to-b from-amber-50 to-orange-50 p-4">
+  <section class="h-full from-amber-50 to-orange-50 px-4">
     <h2 class="mb-4 text-lg font-semibold text-slate-800">Bộ lọc sách</h2>
 
     <div class="space-y-5">

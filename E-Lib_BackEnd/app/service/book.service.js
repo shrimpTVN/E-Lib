@@ -9,7 +9,7 @@ export const getAllBooks = async ({
   theLoai,
   tacGia,
   page = 1,
-  limit = 10,
+  limit = 12,
 }) => {
   const filter = {};
 
@@ -24,7 +24,7 @@ export const getAllBooks = async ({
   }
 
   const parsedPage = Math.max(Number(page) || 1, 1);
-  const parsedLimit = Math.max(Number(limit) || 10, 1);
+  const parsedLimit = Math.max(Number(limit) || 12, 1);
   const skip = (parsedPage - 1) * parsedLimit;
 
   const [items, total] = await Promise.all([
