@@ -6,7 +6,9 @@ import IsLoading from '@/components/IsLoading.vue'
 import api from '@/api/axios.js'
 import Galleria from 'primevue/galleria'
 import { useAuthStore } from '@/stores/auth.store'
-import { useAppToast } from '@/utils/useToast'
+import { useAppToast } from '@/utils/useAppToast'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
 
 const { addToast } = useAppToast()
 const authStore = useAuthStore()
@@ -29,6 +31,7 @@ const responsiveOptions = ref([
 ])
 const images = ref([])
 const isShowComment = ref(false)
+const visible = ref(false)
 
 // Event handler
 const handleLimitChange = () => {
@@ -51,8 +54,32 @@ const handleAddToFavorite = () => {
 }
 
 const handleBorrowNow = () => {
-  // TODO: Implement buy now functionality
-  console.log('Borrow now:', book.value)
+  if (!authStore.user) {
+    addToast('error', 'Vui lòng đăng nhập', 'Bạn cần đăng nhập để mượn sách')
+    return
+  }
+
+  visible.value = true
+}
+
+const handleBorrowBook = async () => {
+  try {
+    const res = await api.post('/borrow', {
+      idDocGia: authStore.user.id,
+      idSach: [book.value._id],
+    })
+
+    addToast('success', 'Mượn sách thành công', 'Bạn đã mượn sách thành công')
+
+    visible.value = false
+  } catch (err) {
+    console.log('Error while borrowing books', err)
+    addToast(
+      'error',
+      'Mượn sách thất bại',
+      err.response?.data?.message || 'Có lỗi xảy ra khi mượn sách',
+    )
+  }
 }
 
 // methods
@@ -75,6 +102,7 @@ const loadBook = async (bookId) => {
         )
       }
     }
+
     images.value = (res.data.book?.hinhAnh || []).map((img) => ({
       itemImageSrc: img,
       thumbnailImageSrc: img,
@@ -289,5 +317,48 @@ watch(
         <BookList :books="relatedBooks" />
       </div>
     </div>
+
+    <!-- borrow dialog  -->
+    <Dialog
+      v-model:visible="visible"
+      modal
+      header="Xác nhận mượn sách"
+      :style="{ width: '25rem' }"
+      class="max-w-[50%] min-w-[30%]"
+    >
+      <div class="book-list-container">
+        <div
+          class="favorite-list-item flex border rounded-lg flex-row items-center justify-between px-4 py-2 bg-white mb-2"
+        >
+          <!-- book infor -->
+          <div class="flex items-center">
+            <div
+              class="book-image w-28 h-28 bg-gray-200 rounded-md text-center flex items-center justify-center"
+            >
+              <img :src="book.biaSach" alt="Bia Sach" class="max-h-28 text-center" />
+            </div>
+
+            <div class="book-infor-favorite ml-4">
+              <div class="book-name-container">
+                <h3 class="font-bold text-gray-800 text-lg mb-1">
+                  {{ book.tenSach }}
+                </h3>
+                <p class="text-gray-500">Tác giả: {{ book.tacGia }}</p>
+                <p class="text-gray-500">Năm xuất bản: {{ book.namXuatBan }}</p>
+              </div>
+            </div>
+          </div>
+
+          <span class="px-6 cursor-pointer text-red-500 ml-10" @click="visible = false">
+            <i class="pi pi-trash"></i>
+          </span>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <Button type="button" label="Hủy" severity="secondary" @click="visible = false"></Button>
+          <Button type="button" label="Xác nhận" @click="handleBorrowBook"></Button>
+        </div>
+      </div>
+    </Dialog>
   </section>
 </template>

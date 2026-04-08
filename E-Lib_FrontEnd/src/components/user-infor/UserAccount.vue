@@ -2,7 +2,7 @@
 import * as yup from 'yup'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import api from '@/api/axios.js'
-import { useAppToast } from '@/utils/useToast.js'
+import { useAppToast } from '@/utils/useAppToast.js'
 import { ref } from 'vue'
 import Message from 'primevue/message'
 
