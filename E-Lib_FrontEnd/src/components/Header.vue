@@ -31,7 +31,9 @@ const { isAuthenticated, user } = storeToRefs(authStore)
           >
         </li>
         <li>
-          <router-link to="" class="hover:text-blue-600 cursor-pointer transition-colors"
+          <router-link
+            to="/borrow-history"
+            class="hover:text-blue-600 cursor-pointer transition-colors"
             >Mượn sách</router-link
           >
         </li>

@@ -11,9 +11,8 @@ export const addFavorite = async (userID, bookID) => {
     idSach: bookID,
   });
 
-  if (favorite) {
-    favorite.soLuong += 1; // Increment quantity if already in favorites
-  } else {
+  if (!favorite) {
+    //if not exist, create new favorite entry else dont do anything
     favorite = new Favorite({
       idDocGia: userID,
       idSach: bookID,

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const decodedToken = (token) => {
+export const decodedToken = (token) => {
   try {
     return jwt.decode(token);
   } catch (error) {
@@ -20,7 +20,7 @@ export const verifyToken = (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: "Access Denied. No token provided. Please log in.",
+      message: "Vui lòng đăng nhập để thực hiện hành động này.",
     });
   }
 
@@ -84,10 +84,19 @@ export function isAdminOrStuff(req, res, next) {
 export function isUser(req, res, next) {
   const token = req.cookies.token;
   const decoded = decodedToken(token);
-  if (!decoded || decoded.role !== "user") {
-    return res.status(403).json({ message: "Không có quyền user" });
+  if (!decoded || decoded.role !== "") {
+    return res
+      .status(403)
+      .json({ message: "Vui lòng đăng nhập với quyền độc giá" });
   }
   next();
 }
 
-export default { verifyToken, isAdmin, isStuff, isAdminOrStuff, isUser };
+export default {
+  decodedToken,
+  verifyToken,
+  isAdmin,
+  isStuff,
+  isAdminOrStuff,
+  isUser,
+};

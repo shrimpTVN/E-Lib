@@ -4,7 +4,7 @@ import * as favoriteService from "../service/favorite.service.js";
 export const getAllFavorites = async (req, res, next) => {
   try {
     const userID = req.query.idDocGia || req.body.idDocGia;
-    console.log("get all favorites for userID:", userID);
+    // console.log("get all favorites for userID:", userID);
     const favorites = await favoriteService.getAllFavoriteList(userID);
     res
       .status(200)
