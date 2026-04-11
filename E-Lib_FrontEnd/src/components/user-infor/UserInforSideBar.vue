@@ -1,7 +1,11 @@
 <script setup>
 import { ref } from 'vue'
-
+import { useAuthStore } from '@/stores/auth.store'
 const emit = defineEmits(['handleChangeTag'])
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const props = defineProps({
   user: {
@@ -10,7 +14,10 @@ const props = defineProps({
   },
 })
 
-console.log('User data in sidebar:', props.user)
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/')
+}
 
 const handleChangeTag = (tagName) => {
   // console.log(tagName)
@@ -20,7 +27,9 @@ const handleChangeTag = (tagName) => {
 
 <template>
   <section>
-    <div class="user-infor-sidebar border bg-white border-gray-300 pb-4 min-h-screen rounded-lg">
+    <div
+      class="user-infor-sidebar border bg-white border-gray-300 pb-4 rounded-lg h-screen relative"
+    >
       <div class="avartar-container *:text-center">
         <!-- user avatar -->
         <div
@@ -46,8 +55,18 @@ const handleChangeTag = (tagName) => {
           <li class="hover:bg-sky-50 cursor-pointer" @click="handleChangeTag('user-history')">
             Lịch sử mượn sách
           </li>
+          <li class="hover:bg-sky-50 cursor-pointer" @click="handleChangeTag('user-history')">
+            Ghi nhận thưởng phạt
+          </li>
         </ul>
       </div>
+
+      <button
+        class="text-gray-600 font-bold absolute bottom-[1rem] hover:bg-sky-50 right-[26%] px-8 py-2 mt-auto hover:text-gray-800 border border-gray-300 rounded-lg flex items-center justify-center gap-2"
+        @click="handleLogout"
+      >
+        <i class="pi pi-sign-out"> </i> Đăng xuất
+      </button>
     </div>
   </section>
 </template>

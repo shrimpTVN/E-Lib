@@ -14,9 +14,10 @@ export const createPublisher = async (req, res, next) => {
 };
 
 export const getAllPublishers = async (req, res, next) => {
+  // console.log("Fetching all publishers...");
   try {
-    const items = await publisherService.getAllPublishers();
-    res.status(200).json(items);
+    const publishers = await publisherService.getAllPublishers();
+    res.status(200).json(publishers);
   } catch (error) {
     next(new AppError(error.message, 500));
   }

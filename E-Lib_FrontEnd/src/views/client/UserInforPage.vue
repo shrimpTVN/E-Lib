@@ -41,7 +41,10 @@ const handleChangeTag = (tag) => {
 <template>
   <IsLoading v-if="isLoading" />
 
-  <section v-else-if="user" class="user-infor-container grid grid-cols-[25%_75%] max-w-7xl mx-auto">
+  <section
+    v-else-if="user"
+    class="user-infor-container grid grid-cols-[25%_75%] max-w-7xl mx-auto mt-4 mb-12"
+  >
     <UserInforSideBar :user="user" @handleChangeTag="handleChangeTag"></UserInforSideBar>
 
     <UserHistory :user="user" v-if="tagName == 'user-history'"></UserHistory>

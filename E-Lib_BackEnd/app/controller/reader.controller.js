@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import * as readerService from "../service/reader.service.js";
+import { getStaffById } from "../service/staff.service.js";
 import AppError from "../utils/ApiError.js";
 import bcrypt from "bcryptjs";
 
@@ -23,8 +24,9 @@ export const createReader = async (req, res, next) => {
 export const getAllReaders = async (req, res, next) => {
   try {
     const items = await readerService.getAllReaders();
-    res.status(200).json(items.map(sanitizeReader));
+    res.status(200).json({ readers: items.map(sanitizeReader) });
   } catch (error) {
+    res.status(500).json({ message: error.message });
     next(new AppError(error.message, 500));
   }
 };
@@ -79,9 +81,6 @@ export const changePassword = async (req, res, next) => {
       return next(new AppError("Không tìm thấy độc giả", 404));
     }
 
-    console.log("Đổi mật khẩu", { id, currentPass, newPass });
-    console.log("User hiện tại", user);
-
     const isMatched = await bcrypt.compare(currentPass, user.password);
     if (!isMatched) {
       res
@@ -116,5 +115,33 @@ export const deleteReader = async (req, res, next) => {
     res.status(200).json({ message: "Xóa độc giả thành công" });
   } catch (error) {
     next(new AppError(error.message, 500));
+  }
+};
+
+export const blockReader = async (req, res, next) => {
+  try {
+    // console.log(req.body);
+    const staff = await getStaffById(req.body.staff._id);
+    if (!staff) {
+      return next(new AppError("Không tìm thấy nhân viên", 404));
+    }
+
+    const isMatched = await bcrypt.compare(
+      req.body.staff.password,
+      staff.password,
+    );
+    if (!isMatched) {
+      res
+        .status(200)
+        .json({ message: "Mật khẩu nhân viên không đúng!", type: "error" });
+      return;
+    }
+
+    await readerService.updateReader(req.params.id, {
+      isActive: req.body.isActive,
+    });
+    res.status(200).json({ message: "Cập nhật trạng thái độc giả thành công" });
+  } catch (error) {
+    next(new AppError(error.message, 400));
   }
 };
