@@ -58,16 +58,14 @@ const handleLogin = async () => {
 
     if (res.data.token) {
       const decoded = jwtDecode(res.data.token)
+      authStore.setUser(decoded)
+      submitSuccess.value = res.data.message || 'Đăng nhập thành công'
 
       if (decoded.role === 'admin' || decoded.role === 'staff') {
         router.push('/admin/dashboard')
       } else {
         router.push('/')
       }
-
-      authStore.setUser(decoded)
-
-      submitSuccess.value = res.data.message || 'Đăng nhập thành công'
     } else {
       submitError.value = res.data.message || 'Đăng nhập thất bại'
     }

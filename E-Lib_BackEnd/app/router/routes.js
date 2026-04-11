@@ -5,6 +5,7 @@ import borrowingRoute from "./borrow.route.js";
 import favoriteRoute from "./favorite.route.js";
 import readerRoute from "./reader.route.js";
 import staffRoute from "./staff.route.js";
+import publisherRoute from "./publisher.route.js";
 
 const router = (app) => {
   app.use("/api/login", loginRoute);
@@ -14,6 +15,7 @@ const router = (app) => {
   app.use("/api/favorites", favoriteRoute);
   app.use("/api/readers", readerRoute);
   app.use("/api/staffs", staffRoute);
+  app.use("/api/publishers", publisherRoute);
 };
 
 export default router;

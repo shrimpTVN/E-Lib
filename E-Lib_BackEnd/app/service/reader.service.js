@@ -20,7 +20,7 @@ export const createReader = async (readerData) => {
 
 export const updateReader = async (id, updateData) => {
   return await Reader.findByIdAndUpdate(id, updateData, {
-    new: true,
+    // new: true,
     runValidators: true,
   });
 };

@@ -12,6 +12,7 @@ const staffSchema = new mongoose.Schema(
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true }, // Remember to hash this with bcrypt!
     vaiTro: { type: String, enum: ["admin", "staff"], default: "staff" },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

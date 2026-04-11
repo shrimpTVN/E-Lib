@@ -7,19 +7,23 @@ const readerSchema = new mongoose.Schema(
     avatar: { type: String }, // URL to the reader's avatar image
     hoLot: { type: String, required: true },
     ten: { type: String, required: true },
-    phai: { type: String, enum: ["Nam", "Nữ", "Khác"] },
+    phai: { type: String, enum: ["Nam", "Nữ", "Khác"], default: "Khác" },
     dienThoai: { type: String, required: true },
     diaChi: { type: String },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true }, // Remember to hash this with bcrypt!
+    password: { type: String, default: "elib" }, // Remember to hash this with bcrypt!
     diemTichLuy: { type: Number, default: 0 },
     ngaySinh: { type: Date },
     tienPhat: { type: Number, default: 0 },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
 
 readerSchema.pre("save", async function (next) {
+  const count = await mongoose.model("Reader").countDocuments();
+  this.maDocGia = `DG${String(count + 1).padStart(4, "0")}`;
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   // next();

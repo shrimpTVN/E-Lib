@@ -63,6 +63,20 @@ export const login = async (req, res, next) => {
   }
 };
 
+export const logout = async (req, res) => {
+  try {
+    // Clear the 'token' cookie
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error during logout" });
+  }
+};
+
 export const register = async (req, res, next) => {
   console.log("Đăng ký");
   try {

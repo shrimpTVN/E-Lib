@@ -12,4 +12,4 @@ const historySchema = new mongoose.Schema({
   lyDo: { type: String },
 });
 
-export default mongoose.model("History", historySchema, "HISTORY");
+export default mongoose.model("History", historySchema, "LICH_SU");
