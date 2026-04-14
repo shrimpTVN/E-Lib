@@ -1,159 +1,206 @@
-1.  Graph Code: Luồng giao tiếp và quan hệ file/thư mục
-    flowchart TD
-    subgraph FE[E-Lib_FrontEnd]
-    FE_MAIN[src/main.js] --> FE_APP[src/App.vue]
-    FE_APP --> FE_ROUTER[src/router/index.js]
+# E-Lib FrontEnd Architecture Context
 
-        FE_ROUTER --> FE_VIEWS[src/views/client/* + src/views/admin/* + src/views/Login.vue]
-        FE_VIEWS --> FE_COMPS[src/components/*]
+Muc tieu tai lieu nay: cung cap du ngu canh de hieu cau truc va quan he giua cac phan trong FrontEnd ma khong can quet lai toan bo thu muc src.
 
-        FE_VIEWS --> FE_SVC_BOOK[src/services/book.service.js]
-        FE_VIEWS --> FE_SVC_FAV[src/services/favorite.service.js]
-        FE_VIEWS --> FE_SVC_USER[src/services/user.service.js]
-        FE_VIEWS --> FE_SVC_PUB[src/services/publisher.service.js]
+## 1) Snapshot kien truc
 
-        FE_SVC_BOOK --> FE_SVC_BASE[src/services/base.service.js]
-        FE_SVC_FAV --> FE_SVC_BASE
-        FE_SVC_USER --> FE_SVC_BASE
-        FE_SVC_PUB --> FE_SVC_BASE
-        FE_SVC_BASE --> FE_API_FACTORY[src/services/api.service.js]
+- Stack: Vue 3 + Vite + Vue Router + Pinia + PrimeVue + TailwindCSS + Axios + VeeValidate/Yup.
+- Kieu to chuc: route-level view trong src/views, UI tai su dung trong src/components, state auth trong src/stores, HTTP gateway tap trung o src/api/axios.js.
+- FrontEnd hien tai goi truc tiep API qua axios (khong co lop src/services). Moi tai lieu cu tham chieu src/services la da loi thoi.
 
-        FE_LOGIN[src/components/login/LoginForm.vue] --> FE_AXIOS[src/api/axios.js]
-        FE_AXIOS --> FE_LS[localStorage token]
+## 2) Runtime flow (tu luc app start)
 
-    end
+```mermaid
+flowchart TD
+    A[src/main.js] --> B[Khoi tao Vue app]
+    B --> C[app.use Pinia]
+    C --> D[app.use Router]
+    D --> E[app.use PrimeVue + Toast + Confirm]
+    E --> F[app.mount #app]
+    F --> G[src/App.vue onMounted]
+    G --> H[authStore.checkAuth GET /me]
+    H --> I{da dang nhap?}
+    I -- Khong --> J[giu nguyen trang hien tai]
+    I -- Co + role staff/admin --> K[router.push /admin/dashboard]
+    I -- Co + role reader --> L[vao luong client]
+```
 
-subgraph BE[E-Lib_BackEnd]
-BE_SERVER[server.js] --> BE_APP[app.js]
-BE_SERVER --> BE_CONFIG[app/config/index.js]
+Ghi chu:
 
-    BE_APP --> BE_ROUTES[app/router/routes.js]
-    BE_APP --> BE_ERR[app/controller/error.controller.js]
-    BE_APP --> BE_COOKIE[cookie-parser middleware]
+- checkAuth nam trong src/stores/auth.store.js va dung axios instance co withCredentials.
+- Co che auth hien tai dua vao cookie/session backend + du lieu user trong Pinia store.
 
-    BE_ROUTES --> R_LOGIN[app/router/login.route.js]
-    BE_ROUTES --> R_REGISTER[app/router/register.route.js]
-    BE_ROUTES --> R_BOOK[app/router/book.route.js]
-    BE_ROUTES --> R_LOAN[app/router/borrowing.route.js]
-    BE_ROUTES --> R_FAV[app/router/favorite.route.js]
-    BE_ROUTES --> R_READER[app/router/reader.route.js]
-    BE_ROUTES --> R_STAFF[app/router/staff.route.js]
+## 3) Router map
 
-    R_LOGIN --> C_LOGIN[app/controller/login.controller.js]
-    R_REGISTER --> C_LOGIN
-    R_BOOK --> C_BOOK[app/controller/book.controller.js]
-    R_LOAN --> C_LOAN[app/controller/loan.controller.js]
-    R_FAV --> C_FAV[app/controller/favorite.controller.js]
-    R_READER --> C_READER[app/controller/reader.controller.js]
-    R_STAFF --> C_STAFF[app/controller/staff.controller.js]
+Router duoc khai bao tai src/router/index.js.
 
-    C_BOOK --> S_BOOK[app/service/book.service.js]
-    C_LOAN --> S_LOAN[app/service/loan.service.js]
-    C_READER --> S_READER[app/service/reader.service.js]
-    C_STAFF --> S_STAFF[app/service/staff.service.js]
-    C_LOGIN --> S_READER
-    C_LOGIN --> S_STAFF
+### Nhom client
 
-    S_BOOK --> M_BOOK[app/model/Book.js]
-    S_LOAN --> M_LOAN[app/model/Loan.js]
-    S_READER --> M_READER[app/model/Reader.js]
-    S_STAFF --> M_STAFF[app/model/Staff.js]
+- / -> src/views/client/ClientLayout.vue (layout chua Header/Footer + router-view con)
+- /books -> BookListPage
+- /books/:id -> BookDetailPage
+- /favorite -> BookFavoritePage
+- /borrow-history -> BorrowHistoryPage
+- /readers/:id -> UserInforPage
 
-    M_BOOK --> DB[(MongoDB)]
-    M_LOAN --> DB
-    M_READER --> DB
-    M_STAFF --> DB
+### Nhom auth
 
-    BE_AUTH[app/middleware/auth.js]:::partial
-    BE_UNUSED[controller/service publisher review history]:::partial
+- /login -> src/views/Login.vue (render LoginForm)
+- /register -> src/views/Login.vue (render RegistorForm)
 
-end
+### Nhom admin
 
-FE_API_FACTORY -->|HTTP JSON| BE_ROUTES
-FE_AXIOS -->|POST /login + Bearer token| BE_ROUTES
+- /admin/dashboard -> src/views/admin/DashBoard.vue
 
-classDef partial fill:#fff3cd,stroke:#b8860b,color:#333;
+### Not found
 
-2. Component Diagram: Vue.js ↔ Express
-   flowchart LR
-   U1[Reader]
-   U2[Staff]
-   U3[Admin]
+- /:pathMatch(._)_ -> src/views/NotFoundPage.vue
 
-subgraph FE[Frontend Vue]
-ROUTER[Vue Router]
-V_CLIENT[Client Views\nBookList/BookDetail/Favorite/UserInfo]
-V_ADMIN[AdminHomePage]
-V_LOGIN[LoginForm + RegisterForm]
+## 4) Phan lop module trong src
 
-    SVC[Service Layer\nBaseService + domain services]
-    AX_FAC[Axios factory\nsrc/services/api.service.js]
-    AX_AUTH[Auth axios\nsrc/api/axios.js]
-    TOKEN[localStorage JWT]
+```text
+src/
+    main.js                 # bootstrap app + plugin registration
+    App.vue                 # root shell, check auth on mount
+    api/
+        axios.js              # HTTP client duy nhat (baseURL + withCredentials)
+    router/
+        index.js              # route definition
+    stores/
+        auth.store.js         # user state, checkAuth, logout, role computed
+    views/
+        client/*              # route-level pages cho doc gia
+        admin/*               # route-level page cho staff/admin
+        Login.vue             # wrapper form dang nhap/dang ky
+    components/
+        Header/Footer/...     # UI tai su dung
+        admin/*               # cac module quan tri hien thi trong DashBoard
+        login/*               # LoginForm, RegistorForm
+        user-infor/*          # thong tin ca nhan, tai khoan, lich su
+    utils/
+        useAppToast.js        # helper toast PrimeVue
+        useConfirm.js         # helper confirm PrimeVue
+```
 
-end
+## 5) Quan he giua cac module
 
-subgraph BE[Backend Express]
-APP[app.js]
-API[Routes\n/login /register /api/books /api/borrowings /api/favorites /api/readers /api/staffs]
-CTRL[Controllers]
-SRV[Services]
-MODEL[Mongoose Models]
-AUTH[auth.js middleware]
-end
+```mermaid
+flowchart LR
+    R[Router] --> VC[Views Client]
+    R --> VA[Views Admin]
+    R --> VL[View Login]
 
-DB[(MongoDB)]
+    VC --> C[Reusable Components]
+    VA --> CA[Admin Components]
+    VL --> CL[Login/Register Components]
 
-U1 --> ROUTER
-U2 --> ROUTER
-U3 --> ROUTER
+    VC --> AX[src/api/axios.js]
+    VA --> AX
+    CL --> AX
+    U[user-infor components] --> AX
 
-ROUTER --> V_CLIENT
-ROUTER --> V_ADMIN
-ROUTER --> V_LOGIN
+    APP[App.vue] --> S[auth.store.js]
+    H[Header/UserInforSideBar] --> S
+    D[DashBoard.vue] --> S
+    S --> AX
+    AX --> BE[/Backend API /api/*]
+```
 
-V_CLIENT --> SVC
-SVC --> AX_FAC
-AX_FAC -->|REST JSON| APP
+## 6) Luong nghiep vu chinh
 
-V_LOGIN --> AX_AUTH
-AX_AUTH -->|POST /login| APP
-AX_AUTH --> TOKEN
-TOKEN --> AX_AUTH
+### 6.1 Dang nhap / Dang ky / Dang xuat
 
-APP --> API
-API --> CTRL
-CTRL --> SRV
-SRV --> MODEL
-MODEL --> DB
+- LoginForm POST /login.
+- Thanh cong: decode token, setUser vao auth store, dieu huong theo role (admin/staff vao dashboard, reader ve /).
+- RegistorForm POST /register, thanh cong thi chuyen /login.
+- Logout qua authStore.logout -> POST /login/logout, xoa user trong store.
 
-API -. áp dụng cục bộ .-> AUTH
+### 6.2 Duyet sach va loc sach
 
-3. Cây thư mục (Directory Structure + vai trò lõi)
-   flowchart TD
-   ROOT[E-Lib]
+- BookListPage GET /books.
+- BookFilter phat su kien filter theo theLoai, tacGia, nhaXuatBan.
+- BookList render danh sach qua BookCard (link den /books/:id).
 
-ROOT --> FE[E-Lib_FrontEnd]
-ROOT --> BE[E-Lib_BackEnd]
+### 6.3 Chi tiet sach va muon sach
 
-FE --> FE_SRC[src]
-FE_SRC --> FE_ROUTER[src/router\nđịnh tuyến client/admin]
-FE_SRC --> FE_VIEWS[src/views\ntrang mức route]
-FE_SRC --> FE_COMPONENTS[src/components\nUI tái sử dụng]
-FE_SRC --> FE_SERVICES[src/services\nCRUD API wrappers]
-FE_SRC --> FE_API[src/api\naxios auth riêng]
-FE_SRC --> FE_ASSETS[src/assets\nstyle/tài nguyên]
+- BookDetailPage GET /books/:id de lay chi tiet + relatedBooks.
+- Them yeu thich: POST /favorites.
+- Muon ngay: POST /borrow voi idSach.
 
-FE --> FE_THEME[theme_files\nmock giao diện tĩnh]
-FE --> FE_PUBLIC[public\nstatic assets]
+### 6.4 Danh sach yeu thich
 
-BE --> BE_APP[app]
-BE_APP --> BE_ROUTER_DIR[app/router\nkhai báo endpoint]
-BE_APP --> BE_CTRL_DIR[app/controller\nxử lý request/response]
-BE_APP --> BE_SRV_DIR[app/service\nnghiệp vụ + truy cập model]
-BE_APP --> BE_MODEL_DIR[app/model\nschema MongoDB]
-BE_APP --> BE_MW_DIR[app/middleware\nauth JWT]
-BE_APP --> BE_UTILS_DIR[app/utils\nAppError + tiện ích]
+- BookFavoritePage GET /favorites theo idDocGia.
+- Xoa yeu thich: DELETE /favorites.
+- Muon nhieu sach: POST /borrow voi danh sach idSach da chon.
 
-BE --> BE_DB[db\nscript dữ liệu tham chiếu]
-BE --> BE_ENTRY[app.js + server.js\nbootstrap server]
+### 6.5 Lich su muon
+
+- BorrowHistoryPage GET /borrow.
+- BorrowCard hien thi trang thai muon; xoa yeu cau qua DELETE /borrow/:loanId.
+
+### 6.6 Trang thong tin nguoi dung
+
+- UserInforPage GET /readers/:id de lay profile.
+- UserInfor PATCH /readers/:id cap nhat thong tin ca nhan.
+- UserAccount PATCH /readers/:id/change-password doi mat khau.
+
+### 6.7 Dashboard admin
+
+- DashBoard la shell chuyen man hinh noi bo bang activeScreen.
+- Các module quan tri:
+  - ReadersManagement: GET /readers, POST /readers, PATCH /readers/:id, PATCH /readers/:id/block, POST /readers/:id/history.
+  - StaffsManagement: GET /staffs, POST /staffs, PATCH /staffs/:id, PATCH /staffs/:id/active.
+  - PublishersManagement: GET /publishers, POST /publishers, PUT /publishers/:id.
+  - OverviewPanel: thong ke UI.
+  - BooksManagement va LoansManagement: hien tai dang o muc mock/demo UI.
+
+## 7) API matrix (frontend su dung hien tai)
+
+| Nhom      | Endpoint                           | Noi goi chinh                                                               |
+| --------- | ---------------------------------- | --------------------------------------------------------------------------- |
+| Auth      | POST /login                        | components/login/LoginForm.vue                                              |
+| Auth      | POST /register                     | components/login/RegistorForm.vue                                           |
+| Auth      | GET /me                            | stores/auth.store.js                                                        |
+| Auth      | POST /login/logout                 | stores/auth.store.js                                                        |
+| Books     | GET /books                         | views/client/BookListPage.vue                                               |
+| Books     | GET /books/:id                     | views/client/BookDetailPage.vue                                             |
+| Favorites | GET /favorites                     | views/client/BookFavoritePage.vue                                           |
+| Favorites | POST /favorites                    | views/client/BookDetailPage.vue                                             |
+| Favorites | DELETE /favorites                  | views/client/BookFavoritePage.vue                                           |
+| Borrow    | GET /borrow                        | views/client/BorrowHistoryPage.vue                                          |
+| Borrow    | POST /borrow                       | views/client/BookDetailPage.vue, views/client/BookFavoritePage.vue          |
+| Borrow    | DELETE /borrow/:id                 | views/client/BorrowHistoryPage.vue                                          |
+| Reader    | GET /readers/:id                   | views/client/UserInforPage.vue                                              |
+| Reader    | PATCH /readers/:id                 | components/user-infor/UserInfor.vue, components/admin/ReadersManagement.vue |
+| Reader    | PATCH /readers/:id/change-password | components/user-infor/UserAccount.vue                                       |
+| Reader    | GET /readers                       | components/admin/ReadersManagement.vue                                      |
+| Reader    | POST /readers                      | components/admin/ReadersManagement.vue                                      |
+| Reader    | PATCH /readers/:id/block           | components/admin/ReadersManagement.vue                                      |
+| Reader    | POST /readers/:id/history          | components/admin/ReadersManagement.vue                                      |
+| Staff     | GET /staffs                        | components/admin/StaffsManagement.vue                                       |
+| Staff     | POST /staffs                       | components/admin/StaffsManagement.vue                                       |
+| Staff     | PATCH /staffs/:id                  | components/admin/StaffsManagement.vue                                       |
+| Staff     | PATCH /staffs/:id/active           | components/admin/StaffsManagement.vue                                       |
+| Publisher | GET /publishers                    | components/admin/PublishersManagement.vue                                   |
+| Publisher | POST /publishers                   | components/admin/PublishersManagement.vue                                   |
+| Publisher | PUT /publishers/:id                | components/admin/PublishersManagement.vue                                   |
+
+## 8) Quy uoc ky thuat dang ap dung
+
+- Alias duong dan @ -> src (cau hinh trong vite.config.js).
+- Dev server chay port 3001 va proxy /api -> http://localhost:3000.
+- Axios baseURL uu tien VITE_HOST, fallback http://localhost:3000/api.
+- Toast/confirm thong nhat qua useAppToast va useConfirm helper.
+- Form validation su dung vee-validate + yup cho login/register va mot so form admin/user.
+
+## 9) Diem can luu y khi mo rong
+
+- Chua co route guard trung tam (hien tai dieu huong auth chu yeu o App.vue va tung component).
+- BooksManagement va LoansManagement chua noi API that.
+- Chua co tang service trung gian; views/components goi API truc tiep.
+
+Neu can nang cap kien truc:
+
+1. Them middleware guard theo role o router.
+2. Tach API call sang domain service/composable de giam logic trong view.
+3. Chuan hoa model du lieu tra ve tu backend (typing/interface).

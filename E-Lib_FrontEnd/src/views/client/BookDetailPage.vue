@@ -297,9 +297,7 @@ watch(
             </h2>
             <p class="text-gray-700 md:px-8">
               {{
-                isLimit
-                  ? (book.gioiThieu || '').substring(0, 400) + (book.gioiThieu ? '...' : '')
-                  : book.gioiThieu
+                isLimit ? (book.moTa || '').substring(0, 400) + (book.moTa ? '...' : '') : book.moTa
               }}
             </p>
             <div class="text-center">

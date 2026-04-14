@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import * as loanService from "../service/loan.service.js";
 import AppError from "../utils/ApiError.js";
+import * as bookService from "../service/book.service.js";
+import * as historyService from "../service/history.service.js";
 import { decodedToken } from "../middleware/auth.middleware.js";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -115,6 +117,94 @@ export const updateLoan = async (req, res, next) => {
   }
 };
 
+export const updateLoanStatus = async (req, res, next) => {
+  const { idLoan, newStatus, idNhanVien, idSach, idDocGia } = req.body;
+  // console.log("Received update status request:", {
+  //   idLoan,
+  //   newStatus,
+  //   idNhanVien,
+  //   idSach
+  // });
+  const nextStatus = {
+    "Hủy nhận": "Đã hủy nhận",
+    "Từ chối": "Bị từ chối",
+    Duyệt: "Chờ nhận",
+    "Đã nhận": "Đang mượn",
+    "Đã trả": "Đã trả",
+    "Thất lạc": "Thất lạc",
+  };
+
+  try {
+    if (!isValidObjectId(idLoan)) {
+      return next(new AppError("Loan ID không hợp lệ", 400));
+    }
+
+    if (!isValidObjectId(idNhanVien)) {
+      return next(new AppError("Staff ID không hợp lệ", 400));
+    }
+
+    if (!nextStatus[newStatus]) {
+      return next(new AppError("Trạng thái mới không hợp lệ", 400));
+    }
+
+    const loan = await loanService.getLoanById(idLoan);
+    if (!loan) {
+      return next(new AppError("Không tìm thấy lượt mượn để cập nhật", 404));
+    }
+
+    const book = await bookService.getBookById(idSach);
+    if (!book) {
+      return next(new AppError("Không tìm thấy sách để cập nhật", 404));
+    }
+
+    loan.trangThaiHienTai = nextStatus[newStatus];
+    loan.TRANG_THAI.push({
+      tenTrangThai: newStatus,
+      idNhanVien: idNhanVien,
+    });
+
+    if (newStatus === "Duyệt") {
+      book.conLai -= 1;
+    }
+
+    if (newStatus === "Đã trả" || newStatus === "Hủy nhận") {
+      if (newStatus === "Đã trả") {
+        await historyService.createHistory(idDocGia, {
+          type: "point",
+          number: 1,
+          lyDo: `Điểm tích lũy từ việc trả sách ${book.tenSach}`,
+        });
+      }
+
+      if (newStatus === "Hủy nhận") {
+        await historyService.createHistory(idDocGia, {
+          type: "point",
+          number: -2,
+          lyDo: `Điểm trừ do không nhận sách ${book.tenSach} sau 1 tuần được duyệt`,
+        });
+      }
+
+      book.isReturned = true;
+      book.conLai += 1;
+    }
+
+    if (newStatus === "Thất lạc") {
+      book.isReturned = true;
+      book.soLuong -= 1;
+      await historyService.createHistory(idDocGia, {
+        type: "money",
+        number: book.giaTien,
+        lyDo: `Tiền phạt do thất lạc sách ${book.tenSach}`,
+      });
+    }
+
+    const updated = await loan.save();
+    res.status(200).json(updated);
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+};
+
 export const deleteLoan = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -132,6 +222,49 @@ export const deleteLoan = async (req, res, next) => {
     res.status(200).json({ message: "Xóa lượt mượn thành công" });
   } catch (error) {
     res.status(500).json({ message: "Lỗi xử lý khi xóa lượt mượn" });
+    next(new AppError(error.message, 500));
+  }
+};
+
+export const extendLoan = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return next(new AppError("Loan ID không hợp lệ", 400));
+    }
+
+    const loan = await loanService.getLoanById(id);
+    if (!loan) {
+      return next(new AppError("Không tìm thấy lượt mượn để gia hạn", 404));
+    }
+
+    if (loan.isGiaHan) {
+      return next(new AppError("Lượt mượn đã được gia hạn trước đó", 400));
+    }
+
+    if (loan.trangThaiHienTai !== "Đang mượn") {
+      return next(new AppError("Chỉ có thể gia hạn lượt mượn đang mượn", 400));
+    }
+
+    if (loan.idDocGia.diemTichLuy < 7) {
+      return next(
+        new AppError(
+          "Bạn cần ít nhất 7 điểm tích lũy để gia hạn lượt mượn",
+          400,
+        ),
+      );
+    }
+
+    await historyService.createHistory(loan.idDocGia, {
+      type: "point",
+      number: -7,
+      lyDo: `Điểm trừ do gia hạn lượt mượn sách ${loan.idSach.tenSach} thêm 7 ngày`,
+    });
+
+    loan.isGiaHan = true;
+
+    res.status(200).json(await loan.save());
+  } catch (error) {
     next(new AppError(error.message, 500));
   }
 };

@@ -13,15 +13,22 @@ export const createLoan = async (idDocGia, idSach) => {
 };
 
 export const getAllLoans = async () => {
-  return await Loan.find().populate("idDocGia").populate("idSach");
+  return await Loan.find()
+    .sort({ updatedAt: -1 })
+    .populate("idDocGia", "hoLot ten")
+    .populate("idSach", "tenSach");
 };
 
 export const getAllLoanByReaderId = async (idDocGia) => {
-  return await Loan.find({ idDocGia: idDocGia }).populate("idSach");
+  return await Loan.find({ idDocGia: idDocGia })
+    .sort({ updatedAt: -1 })
+    .populate("idSach");
 };
 
 export const getLoanById = async (id) => {
-  return await Loan.findById(id).populate("idDocGia").populate("idSach");
+  return await Loan.findById(id)
+    .populate("idDocGia")
+    .populate("idSach", "tenSach");
 };
 
 export const getActiveLoanByReaderId = async (idDocGia) => {
@@ -51,8 +58,8 @@ export const updateLoan = async (id, updateData) => {
     new: true,
     runValidators: true,
   })
-    .populate("idDocGia")
-    .populate("idSach");
+    .populate("idDocGia", "hoLot ten")
+    .populate("idSach", "tenSach");
 };
 
 export const deleteLoan = async (id) => {
