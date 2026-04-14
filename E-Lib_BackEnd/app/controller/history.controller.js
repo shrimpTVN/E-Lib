@@ -1,5 +1,8 @@
 import AppError from "../utils/ApiError.js";
 import * as historyService from "../service/history.service.js";
+import mongoose from "mongoose";
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 export const createHistory = async (req, res, next) => {
   try {
@@ -19,6 +22,25 @@ export const createHistory = async (req, res, next) => {
   }
 };
 
+export const getAllHistoriesByReaderId = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    if (!isValidObjectId(userId)) {
+      return next(new AppError("User ID is required", 400));
+    }
+
+    const history = await historyService.getAllHistoriesByReaderId(userId);
+
+    if (!history) {
+      return next(new AppError("History not found", 404));
+    }
+    res.status(200).json(history);
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+};
+
 export const getAllHistories = async (req, res, next) => {
   try {
     const items = await historyService.getAllHistoriesByReaderId(req.params.id);
@@ -29,25 +51,19 @@ export const getAllHistories = async (req, res, next) => {
   }
 };
 
-export const getHistoryById = async (req, res, next) => {
-  try {
-    const item = await historyService.getHistoryById(req.params.id);
-    if (!item) {
-      return next(new AppError("History not found", 404));
-    }
-    res.status(200).json(item);
-  } catch (error) {
-    next(new AppError(error.message, 500));
-  }
-};
-
 export const updateHistory = async (req, res, next) => {
   try {
-    const item = await historyService.updateHistory(req.params.id, req.body);
-    if (!item) {
+    const id = req.params.id;
+
+    if (!isValidObjectId(id)) {
+      return next(new AppError("History ID is required", 400));
+    }
+
+    const history = await historyService.updateHistory(id, req.body);
+    if (!history) {
       return next(new AppError("History not found", 404));
     }
-    res.status(200).json(item);
+    res.status(200).json(history);
   } catch (error) {
     next(new AppError(error.message, 500));
   }
@@ -55,8 +71,13 @@ export const updateHistory = async (req, res, next) => {
 
 export const deleteHistory = async (req, res, next) => {
   try {
-    const item = await historyService.deleteHistory(req.params.id);
-    if (!item) {
+    const id = req.params.id;
+
+    if (!isValidObjectId(id)) {
+      return next(new AppError("History ID is required", 400));
+    }
+    const history = await historyService.deleteHistory(id);
+    if (!history) {
       return next(new AppError("History not found", 404));
     }
     res.status(200).json({ message: "History deleted successfully" });

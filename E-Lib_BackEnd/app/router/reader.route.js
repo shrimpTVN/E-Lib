@@ -5,12 +5,19 @@ import * as historyController from "../controller/history.controller.js";
 const router = express.Router();
 
 router
-  .get("/", readController.getAllReaders)
-  .post("/", readController.createReader)
-  .get("/:id", readController.getReaderById)
-  .post("/:id/history", historyController.createHistory)
-  .patch("/:id", readController.updateReader)
+  .route("/")
+  .get(readController.getAllReaders)
+  .post(readController.createReader);
+
+router
   .patch("/:id/change-password", readController.changePassword)
   .patch("/:id/block", readController.blockReader)
-  .delete("/:id", readController.deleteReader);
+  .post("/:id/history", historyController.createHistory)
+  .get("/:id/history", historyController.getAllHistoriesByReaderId);
+
+router
+  .route("/:id")
+  .get(readController.getReaderById)
+  .patch(readController.updateReader)
+  .delete(readController.deleteReader);
 export default router;
