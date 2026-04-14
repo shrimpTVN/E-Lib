@@ -7,7 +7,7 @@ export const createHistory = async (req, res, next) => {
       return next(new AppError("Số ngày phải là số dương", 400));
     }
 
-    console.log("Creating history with data:", req.body);
+    // console.log("Creating history with data:", req.body);
 
     const historyCreated = await historyService.createHistory(
       req.params.id,

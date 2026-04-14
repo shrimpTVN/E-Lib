@@ -1,11 +1,10 @@
 <script setup>
-import { computed } from 'vue'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import DataTable from 'primevue/datatable'
 import InputText from 'primevue/inputtext'
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import api from '@/api/axios.js'
@@ -22,6 +21,7 @@ const visibleDialog = ref(false)
 const visiblePasswordDialog = ref(false)
 const { addToast } = useAppToast()
 const isLoading = ref(false)
+const loading = ref(false)
 const selectedReader = ref(null)
 const password = ref('')
 const query = ref('')
@@ -214,15 +214,15 @@ const handleUnblockReader = async (reader) => {
   }
 }
 
-// const filteredRows = computed(() => {
-//   const keyword = query.trim().toLowerCase()
+const filteredRows = computed(() => {
+  const keyword = query.value.trim().toLowerCase()
 
-//   if (!keyword) return readers.value
+  if (!keyword) return readers.value
 
-//   return readers.value.filter((row) =>
-//     Object.values(row).some((value) => String(value).toLowerCase().includes(keyword)),
-//   )
-// })
+  return readers.value.filter((row) =>
+    Object.values(row).some((value) => String(value).toLowerCase().includes(keyword)),
+  )
+})
 
 const loadUsers = async () => {
   try {
@@ -243,7 +243,9 @@ onMounted(() => {
   <div class="flex flex-col gap-2 sm:flex-row justify-end items-center mb-2 px-2">
     <span class="p-input-icon-left sm:w-72">
       <!-- search bar -->
-      <InputText class="h-10 w-full text-lg" placeholder="Tìm kiếm độc giả..."> ></InputText>
+      <InputText v-model="query" class="h-10 w-full text-lg" placeholder="Tìm kiếm độc giả...">
+        ></InputText
+      >
     </span>
 
     <!-- create button -->
@@ -254,13 +256,17 @@ onMounted(() => {
     ></Button>
   </div>
   <DataTable
-    :value="readers"
+    :value="filteredRows"
     dataKey="_id"
     paginator
-    :rows="16"
+    :rows="12"
+    :rowsPerPageOptions="[12, 24, 36]"
     stripedRows
-    class="overflow-hidden rounded-lg border border-slate-300"
+    removableSort
+    :loading="loading"
+    class="overflow-hidden rounded-lg border border-slate-200"
     tableClass="text-sm"
+    :rowHover="true"
   >
     <Column field="hoTen" header="Họ và tên" sortable>
       <template #body="slotProps"> {{ slotProps.data.hoLot }} {{ slotProps.data.ten }} </template>
@@ -302,6 +308,7 @@ onMounted(() => {
     </template>
   </DataTable>
 
+  <!-- Infor dialog -->
   <Dialog
     v-model:visible="visibleDialog"
     :header="selectedReader ? 'Chỉnh sửa thông tin độc giả' : 'Thêm độc giả'"
@@ -510,6 +517,8 @@ onMounted(() => {
       </TabPanels>
     </Tabs>
   </Dialog>
+
+  <!-- Password Dialog -->
   <Dialog
     v-model:visible="visiblePasswordDialog"
     header="Xác thực mật khẩu"

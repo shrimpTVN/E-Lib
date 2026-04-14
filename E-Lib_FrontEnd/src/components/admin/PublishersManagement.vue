@@ -10,13 +10,7 @@ import { useAppToast } from '@/utils/useAppToast'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-const props = defineProps({
-  query: {
-    type: String,
-    default: '',
-  },
-})
-
+const query = ref('')
 const isLoading = ref(false)
 const { addToast } = useAppToast()
 const publishers = ref([])
@@ -79,7 +73,7 @@ const handleFormSubmit = handleSubmit(async (formData) => {
 })
 
 const filteredRows = computed(() => {
-  const keyword = props.query.trim().toLowerCase()
+  const keyword = query.value.trim().toLowerCase()
 
   if (!keyword) return publishers.value
 
@@ -104,7 +98,8 @@ onMounted(async () => {
   <div class="flex flex-col gap-2 sm:flex-row justify-end items-center mb-2 px-2">
     <span class="p-input-icon-left sm:w-72">
       <!-- search bar -->
-      <InputText class="h-10 w-full text-lg" placeholder="Tìm kiếm nhà xuất bản..."> </InputText>
+      <InputText v-model="query" class="h-10 w-full text-lg" placeholder="Tìm kiếm nhà xuất bản...">
+      </InputText>
     </span>
 
     <!-- create button -->
@@ -116,12 +111,16 @@ onMounted(async () => {
   </div>
   <DataTable
     :value="filteredRows"
-    dataKey="id"
+    dataKey="_id"
     paginator
-    :rows="10"
+    :rows="12"
+    :rowsPerPageOptions="[12, 24, 36]"
     stripedRows
+    removableSort
+    :loading="loading"
     class="overflow-hidden rounded-lg border border-slate-200"
     tableClass="text-sm"
+    :rowHover="true"
   >
     <Column field="tenNXB" header="Tên nhà xuất bản" sortable />
     <Column field="diaChi" header="Địa chỉ" sortable />

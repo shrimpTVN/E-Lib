@@ -16,8 +16,6 @@ const createToken = (payload) => {
 
 export const login = async (req, res, next) => {
   const { username, password } = req.body;
-
-  console.log("Đăng nhập", { username, password });
   try {
     // 1. Kiểm tra user tồn tại
     let user;
@@ -29,7 +27,7 @@ export const login = async (req, res, next) => {
     // nếu không có thì tìm trong staff
     if (!user) {
       user = await staffService.getStaffByUsername(username);
-      role = user.vaiTro || "";
+      role = user?.vaiTro || "";
     }
 
     if (!user)

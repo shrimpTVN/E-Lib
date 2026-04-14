@@ -18,6 +18,8 @@ const loanSchema = new mongoose.Schema(
       type: String,
       enum: [
         "Chờ duyệt",
+        "Đã hủy nhận",
+        "Bị từ chối",
         "Chờ nhận",
         "Đang mượn",
         "Đã trả",
@@ -34,7 +36,14 @@ const loanSchema = new mongoose.Schema(
         {
           tenTrangThai: {
             type: String,
-            enum: ["Đã duyệt", "Đã nhận", "Đã trả", "Thất lạc"],
+            enum: [
+              "Duyệt",
+              "Hủy nhận",
+              "Từ chối",
+              "Đã nhận",
+              "Đã trả",
+              "Thất lạc",
+            ],
             required: true,
           },
           ngayTao: { type: Date, default: Date.now },

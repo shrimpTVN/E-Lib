@@ -7,12 +7,17 @@ const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 export const createBook = async (req, res, next) => {
   try {
-    // If a file was successfully uploaded to Cloudinary, attach the URL
-    // if (req.file) {
-    //   bookData.coverImageUrl = req.file.path;
-    // }
+    const bookData = { ...req.body };
 
-    const created = await bookService.createBook(req.body);
+    if (req.files?.biaSach?.length) {
+      bookData.biaSach = req.files.biaSach[0].url;
+    }
+
+    bookData.hinhAnh = req.files?.newHinhAnh?.length
+      ? req.files.newHinhAnh.map((file) => file.url)
+      : [];
+
+    const created = await bookService.createBook(bookData);
     res.status(201).json(created);
   } catch (error) {
     next(new AppError(error.message, 400));
@@ -59,8 +64,26 @@ export const updateBook = async (req, res, next) => {
       return next(new AppError("Book ID không hợp lệ", 400));
     }
 
-    const updated = await bookService.updateBook(id, req.body);
+    const bookData = { ...req.body };
 
+    bookData.hinhAnh = JSON.parse(bookData.hinhAnh || "[]");
+    // console.log("Existing book data:", bookData.hinhAnh);
+    if (req.files?.biaSach?.length) {
+      bookData.biaSach = req.files.biaSach[0].url;
+    }
+
+    if (req?.files?.newHinhAnh?.length) {
+      // console.log("New images uploaded:", req.files.newHinhAnh);
+      const newImages = req.files?.newHinhAnh?.length
+        ? req.files.newHinhAnh.map((file) => file.url)
+        : [];
+
+      bookData.hinhAnh = [...bookData.hinhAnh, ...newImages];
+    }
+
+    // console.log("Updated book data:", bookData.hinhAnh);
+
+    const updated = await bookService.updateBook(id, bookData);
     if (!updated) {
       return next(new AppError("Không tìm thấy sách để cập nhật", 404));
     }

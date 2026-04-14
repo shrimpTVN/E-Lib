@@ -13,12 +13,13 @@ router
   .get(verifyToken, loanController.getAllLoans)
   .post([verifyToken, isUser], loanController.createLoan);
 
+router.route("/update-status").patch(loanController.updateLoanStatus);
+router.route("/extend/:id").patch(loanController.extendLoan);
+
 router
   .route("/:id")
   .get(loanController.getLoanById)
   .patch([verifyToken, isAdminOrStuff], loanController.updateLoan)
   .delete([verifyToken, isUser], loanController.deleteLoan);
-
-// router.route("/:id/update-status").patch(loanController.updateLoanStatus);
 
 export default router;

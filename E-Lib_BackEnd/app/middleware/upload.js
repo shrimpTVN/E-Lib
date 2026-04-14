@@ -1,7 +1,6 @@
-// app/middleware/upload.js
 import cloudinary from "cloudinary";
 import multer from "multer";
-import cloudinaryStorage from "multer-storage-cloudinary";
+import CloudinaryStorage from "multer-storage-cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,25 +8,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = cloudinaryStorage({
-  cloudinary,
-  // Change 'params' from a static object to an async function
-  params: async (req, file) => {
-    // Extract a unique identifier from the request body.
-    // We use maSach (Book Code) as it is unique and uppercase
-    // Fallback to 'uncategorized' if maSach is missing
-    const bookCode = req.body.maSach ? req.body.maSach.trim() : "uncategorized";
-
-    // Define the dynamic folder path (e.g., "elib_books/B001")
-    const folderPath = `elib_books/${bookCode}`;
-
-    return {
-      folder: folderPath,
-      allowedFormats: ["jpeg", "png", "jpg", "webp"],
-    };
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "E-lib/Books",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
   },
 });
 
-const uploadCloud = multer({ storage });
+const uploadBookImages = multer({ storage }).fields([
+  { name: "biaSach", maxCount: 1 },
+  { name: "newHinhAnh", maxCount: 5 },
+]);
 
-export default uploadCloud;
+export { cloudinary, uploadBookImages };

@@ -10,9 +10,15 @@ const publisherSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-publisherSchema.pre("save", async function (next) {
-  const coutn = await mongoose.model("Publisher").countDocuments();
-  this.maNXB = `NXB${String(coutn + 1).padStart(4, "0")}`;
+publisherSchema.pre("validate", async function (next) {
+  if (this.isNew) {
+    try {
+      const count = await mongoose.model("Publisher").countDocuments();
+      this.maNXB = `NXB${String(count + 1).padStart(4, "0")}`;
+    } catch (error) {
+      return next(error);
+    }
+  }
 });
 
 export default mongoose.model("Publisher", publisherSchema, "NHA_XUAT_BAN");

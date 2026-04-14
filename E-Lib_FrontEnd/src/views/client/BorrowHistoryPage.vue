@@ -40,6 +40,25 @@ const handleDeleteLoan = async (loanId) => {
   }
 }
 
+const handleExtendLoan = async (loanId) => {
+  console.log('Requesting extension for loan ID:', loanId)
+  try {
+    const res = await api.patch(`/borrow/extend/${loanId}`)
+    if (res.status === 200) {
+      addToast('success', 'Thành công', 'Yêu cầu gia hạn đã được gửi thành công')
+      // Cập nhật lại lịch sử mượn sách sau khi gia hạn
+      await fetchBorrowHistory()
+    }
+  } catch (error) {
+    console.error('Error extending loan:', error)
+    addToast(
+      'error',
+      'Lỗi',
+      error.response?.data?.message || ' Lỗi xảy ra khi gửi yêu cầu gia hạn.Vui lòng thử lại sau',
+    )
+  }
+}
+
 onMounted(() => {
   fetchBorrowHistory()
 })
@@ -58,6 +77,7 @@ onMounted(() => {
         :key="borrow._id || borrow.id"
         :loan="borrow"
         @delete-loan="handleDeleteLoan"
+        @extend-loan="handleExtendLoan"
       />
     </div>
   </section>

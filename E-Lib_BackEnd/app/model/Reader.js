@@ -20,10 +20,19 @@ const readerSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-readerSchema.pre("save", async function (next) {
-  const count = await mongoose.model("Reader").countDocuments();
-  this.maDocGia = `DG${String(count + 1).padStart(4, "0")}`;
+readerSchema.pre("validate", async function (next) {
+  if (this.isNew) {
+    try {
+      const count = await mongoose.model("Reader").countDocuments();
+      this.maDocGia = `DG${String(count + 1).padStart(4, "0")}`;
+    } catch (error) {
+      return next(error);
+    }
+  }
+  // next();
+});
 
+readerSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   // next();

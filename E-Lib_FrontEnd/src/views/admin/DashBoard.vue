@@ -1,14 +1,18 @@
 <script setup>
 import { computed, ref } from 'vue'
-import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
 import BooksManagement from '../../components/admin/BooksManagement.vue'
 import LoansManagement from '../../components/admin/LoansManagement.vue'
 import OverviewPanel from '../../components/admin/OverviewPanel.vue'
 import PublishersManagement from '../../components/admin/PublishersManagement.vue'
-import UsersManagement from '../../components/admin/UsersManagement.vue'
+import ReadersManagement from '../../components/admin/ReadersManagement.vue'
 import StaffsManagement from '../../components/admin/StaffsManagement.vue'
+import PolicyManagement from '../../components/admin/PolicyManagement.vue'
+import PersonalInfor from '../../components/admin/PersonalInfor.vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.store'
 
+const router = useRouter()
+const authStore = useAuthStore()
 const adminMenu = [
   { key: 'home', label: 'Trang chủ', icon: 'pi pi-home' },
   { key: 'loans', label: 'Mượn sách', icon: 'pi pi-list-check' },
@@ -16,29 +20,48 @@ const adminMenu = [
   { key: 'books', label: 'Sách', icon: 'pi pi-book' },
   { key: 'publishers', label: 'Nhà xuất bản', icon: 'pi pi-building' },
   { key: 'staffs', label: 'Nhân viên', icon: 'pi pi-users' },
+  { key: 'policy', label: 'Chính sách', icon: 'pi pi-cog' },
+  { key: 'personal', label: 'Thông tin cá nhân', icon: 'pi pi-id-card' },
 ]
+
+if (authStore.user.role === 'staff') {
+  // Nếu là staff, loại bỏ mục "Nhân viên" khỏi menu
+  adminMenu.splice(
+    adminMenu.findIndex((item) => item.key === 'staffs'),
+    1,
+  )
+}
 
 const screenTitle = {
   home: 'Tổng quan hệ thống',
-  readers: 'Danh sách người dùng',
+  readers: 'Danh sách độc giả',
   staffs: 'Danh sách nhân viên',
   books: 'Danh sách sách',
   publishers: 'Danh sách nhà xuất bản',
   loans: 'Danh sách phiếu mượn',
+  policy: 'Cài đặt',
+  personal: 'Thông tin cá nhân',
 }
 
 const screenComponentMap = {
   home: OverviewPanel,
-  readers: UsersManagement,
+  readers: ReadersManagement,
   staffs: StaffsManagement,
   books: BooksManagement,
   publishers: PublishersManagement,
   loans: LoansManagement,
+  policy: PolicyManagement,
+  personal: PersonalInfor,
 }
 
-const activeScreen = ref('publishers')
+const activeScreen = ref('loans')
 
 const activeComponent = computed(() => screenComponentMap[activeScreen.value] || OverviewPanel)
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -71,6 +94,7 @@ const activeComponent = computed(() => screenComponentMap[activeScreen.value] ||
 
         <button
           class="m-3 mt-12 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border border-slate-200/30 px-3 py-2 text-sm text-slate-100 hover:bg-slate-100/10"
+          @click="handleLogout"
         >
           <i class="pi pi-sign-out"></i>
           <span>Đăng xuất</span>
