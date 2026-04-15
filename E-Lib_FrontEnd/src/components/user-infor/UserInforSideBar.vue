@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 const emit = defineEmits(['handleChangeTag'])
 import { useRouter } from 'vue-router'
+import Image from 'primevue/image'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -28,19 +29,27 @@ const handleChangeTag = (tagName) => {
 <template>
   <section>
     <div
-      class="user-infor-sidebar border bg-white border-gray-300 pb-4 rounded-lg h-screen relative"
+      class="user-infor-sidebar border bg-white border-gray-300 pb-4 rounded-lg min-h-[46rem] relative"
     >
       <div class="avartar-container *:text-center">
         <!-- user avatar -->
         <div
-          class="p-4 mb-4 bg-sky-200 rounded-tl-lg rounded-tr-lg w-36 h-40 rounded-xl mx-auto mt-4"
-        ></div>
-        <h3 class="font-bold text-gray-700 text-xl">
+          class="p-4 mb-4 bg-gray-100 rounded-tl-lg rounded-tr-lg w-40 h-44 rounded-xl mx-auto mt-4"
+        >
+          <Image
+            :src="
+              user.avatar ||
+              'https://res.cloudinary.com/depaiphq0/image/upload/v1776151633/User-avatar_dhrqba.png'
+            "
+            alt="Image"
+          />
+        </div>
+        <h3 class="font-bold text-gray-700 text-xl mb-2">
           {{ props.user.hoLot + ' ' + props.user.ten }}
         </h3>
-        <p class="text-gray-500 text-base">Điểm tích lũy: {{ props.user.diemTichLuy }}</p>
-        <p class="text-gray-500 text-base">Số tiền phạt: {{ props.user.tienPhat }}</p>
-        <p class="text-gray-500 text-base">Số ngày phạt: 0</p>
+        <p class="text-slate-600 text-base">Điểm tích lũy: {{ props.user.diemTichLuy }}</p>
+        <p class="text-slate-600 text-base">Số tiền phạt: {{ props.user.tienPhat }}</p>
+        <p class="text-slate-600 text-base">Số ngày phạt: 0</p>
         <div class="w-[80%] mx-auto bg-gray-400 h-[1px] mt-10"></div>
       </div>
 
@@ -52,9 +61,7 @@ const handleChangeTag = (tagName) => {
           <li class="hover:bg-sky-50 cursor-pointer" @click="handleChangeTag('user-account')">
             Tài khoản
           </li>
-          <li class="hover:bg-sky-50 cursor-pointer" @click="handleChangeTag('user-history')">
-            Lịch sử mượn sách
-          </li>
+
           <li class="hover:bg-sky-50 cursor-pointer" @click="handleChangeTag('user-history')">
             Ghi nhận thưởng phạt
           </li>

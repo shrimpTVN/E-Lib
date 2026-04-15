@@ -1,4 +1,4 @@
-import Publisher from "../model/Publishers.js";
+import Publisher from "../model/Publisher.js";
 
 export const createPublisher = async (publisherData) => {
   return await Publisher.create(publisherData);

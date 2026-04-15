@@ -314,6 +314,15 @@ watch(
         <h2 class="text-2xl font-bold text-blue-600 mb-6 text-center underline">Sách liên quan</h2>
         <BookList :books="relatedBooks" />
       </div>
+
+      <div class="move-to-book-list-container flex justify-center mt-8">
+        <router-link
+          :to="`/books`"
+          class="mt-6 rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+        >
+          Xem tất cả sách
+        </router-link>
+      </div>
     </div>
 
     <!-- borrow dialog  -->
