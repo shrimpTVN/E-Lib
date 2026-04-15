@@ -9,6 +9,8 @@ router
   .get(bookController.getAllBooks)
   .post(uploadBookImages, bookController.createBook);
 
+router.route("/suggestions").get(bookController.getBookSuggestions);
+
 router
   .route("/:id")
   .get(bookController.getBookById)

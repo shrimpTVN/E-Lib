@@ -27,13 +27,29 @@ export const createBook = async (req, res, next) => {
 export const getAllBooks = async (req, res, next) => {
   try {
     // console.log("get all books");
-    const books = await bookService.getAllBooks(req.query);
+    console.log("Query parameters:", req.query);
+    const data = await bookService.getAllBooks({
+      keyword: req.query.keyword,
+      types: req.query.types,
+      authors: req.query.authors,
+      keyword: req.query.keyword,
+      publishers: req.query.publishers,
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+    // console.log("Books retrieved:", data);
     const publishers = await publisherService.getAllPublishers();
     const publisherNames = publishers.map((pub) => pub.tenNXB);
-    const types = [...new Set(books.data.map((book) => book.theLoai))];
-    const authors = [...new Set(books.data.map((book) => book.tacGia))];
+    const types = [...new Set(data.books.map((book) => book.theLoai))];
+    const authors = [...new Set(data.books.map((book) => book.tacGia))];
 
-    res.status(200).json({ books: books.data, publisherNames, types, authors });
+    res.status(200).json({
+      books: data.books,
+      publisherNames,
+      types,
+      authors,
+      totalRecords: data.total,
+    });
   } catch (error) {
     next(new AppError(error.message, 500));
   }
@@ -54,6 +70,17 @@ export const getBookById = async (req, res, next) => {
     res.status(200).json({ book: book, relatedBooks: relatedBooks });
   } catch (error) {
     next(new AppError(error.message, 500));
+  }
+};
+
+export const getBookSuggestions = async (req, res, next) => {
+  try {
+    const { keyword } = req.query;
+    const suggestions = await bookService.getSuggestions(keyword);
+    return res.status(200).json(suggestions);
+  } catch (error) {
+    console.error("Lỗi khi lấy gợi ý:", error);
+    return res.status(500).json({ message: "Lỗi server." });
   }
 };
 
