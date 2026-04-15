@@ -42,6 +42,7 @@ export const login = async (req, res, next) => {
     const payload = {
       id: user._id,
       role: role || "",
+      username: user.email || user.username,
     };
 
     const token = createToken(payload);

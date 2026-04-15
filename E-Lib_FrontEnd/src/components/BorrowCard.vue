@@ -159,7 +159,14 @@ const handleExtendLoan = () => {
           </div>
 
           <div class="status-container">
-            <div v-if="loan.trangThaiHienTai === 'Đang mượn'" class="date-container mt-2">
+            <div
+              v-if="
+                loan.trangThaiHienTai === 'Đang mượn' ||
+                loan.trangThaiHienTai === 'Quá hạn' ||
+                loan.trangThaiHienTai === 'Đã trả'
+              "
+              class="date-container mt-2"
+            >
               <span
                 class="mt-2 text-sm font-semibold text-slate-700 rounded-lg py-1 px-2"
                 :class="bgType()"

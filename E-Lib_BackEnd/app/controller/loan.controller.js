@@ -3,6 +3,7 @@ import * as loanService from "../service/loan.service.js";
 import AppError from "../utils/ApiError.js";
 import * as bookService from "../service/book.service.js";
 import * as historyService from "../service/history.service.js";
+import * as readerService from "../service/reader.service.js";
 import { decodedToken } from "../middleware/auth.middleware.js";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -35,6 +36,30 @@ export const createLoan = async (req, res, next) => {
         message: `Bạn có ${isOverdue} lượt mượn quá hạn. Vui lòng trả sách trước khi mượn thêm.`,
       });
       return;
+    }
+
+    const reader = await readerService.getReaderById(idDocGia);
+    if (!reader) {
+      return next(new AppError("Không tìm thấy độc giả", 404));
+    }
+
+    const countBanDay = await historyService.countBanDayByReaderId(idDocGia);
+    if (countBanDay > 0) {
+      return next(
+        new AppError(
+          `Bạn đang bị cấm mượn sách trong ${countBanDay} ngày tới do vi phạm quy định.`,
+          400,
+        ),
+      );
+    }
+
+    if (reader.tienPhat < 0) {
+      return next(
+        new AppError(
+          "Bạn đang có tiền phạt chưa thanh toán. Vui lòng thanh toán trước khi mượn sách.",
+          400,
+        ),
+      );
     }
 
     const created = await Promise.all(
@@ -169,11 +194,20 @@ export const updateLoanStatus = async (req, res, next) => {
 
     if (newStatus === "Đã trả" || newStatus === "Hủy nhận") {
       if (newStatus === "Đã trả") {
-        await historyService.createHistory(idDocGia, {
-          type: "point",
-          number: 1,
-          lyDo: `Điểm tích lũy từ việc trả sách ${book.tenSach}`,
-        });
+        if (!loan.isQuaHan) {
+          await historyService.createHistory(idDocGia, {
+            type: "point",
+            number: 1,
+            lyDo: `Điểm tích lũy từ việc trả sách ${book.tenSach} đúng hạn`,
+          });
+        } else {
+          await historyService.createHistory(idDocGia, {
+            type: "point",
+            number: -1,
+            lyDo: `Trừ điểm tích lũy từ việc trả sách ${book.tenSach} quá hạn`,
+          });
+        }
+        loan.ngayTra = new Date();
       }
 
       if (newStatus === "Hủy nhận") {
@@ -196,6 +230,10 @@ export const updateLoanStatus = async (req, res, next) => {
         number: book.giaTien,
         lyDo: `Tiền phạt do thất lạc sách ${book.tenSach}`,
       });
+    }
+
+    if (newStatus === "Đã nhận ") {
+      loan.hanTra = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
     }
 
     const updated = await loan.save();
@@ -262,6 +300,7 @@ export const extendLoan = async (req, res, next) => {
     });
 
     loan.isGiaHan = true;
+    loan.hanTra = new Date(loan.hanTra.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     res.status(200).json(await loan.save());
   } catch (error) {

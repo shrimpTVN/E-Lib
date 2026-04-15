@@ -7,10 +7,13 @@ import IsLoading from '@/components/IsLoading.vue'
 import { onMounted, ref } from 'vue'
 import api from '@/api/axios.js'
 import { useAuthStore } from '@/stores/auth.store'
+import { formatCurrency } from '@/utils/useFormat.js'
 
 const tagName = ref('user-infor')
 const authStore = useAuthStore()
 const user = ref(null)
+const history = ref([])
+const countBanDay = ref(0)
 
 // 1. Create a loading state
 const isLoading = ref(true)
@@ -19,6 +22,10 @@ const loadUser = async () => {
   try {
     const response = await api.get(`/readers/${authStore.user.id}`)
     user.value = response.data
+
+    const historyResponse = await api.get(`/readers/${authStore.user.id}/ban-days`)
+    countBanDay.value = historyResponse.data.banDays || 0
+    console.log(countBanDay.value)
   } catch (error) {
     console.error('Error loading user data:', error)
   } finally {
@@ -28,8 +35,8 @@ const loadUser = async () => {
 }
 
 // 3. Trigger the API call right after the component mounts
-onMounted(() => {
-  loadUser()
+onMounted(async () => {
+  await loadUser()
 })
 
 const handleChangeTag = (tag) => {
@@ -45,7 +52,11 @@ const handleChangeTag = (tag) => {
     v-else-if="user"
     class="user-infor-container grid grid-cols-[25%_75%] max-w-7xl mx-auto mt-4 mb-12"
   >
-    <UserInforSideBar :user="user" @handleChangeTag="handleChangeTag"></UserInforSideBar>
+    <UserInforSideBar
+      :user="user"
+      :countBanDay="countBanDay"
+      @handleChangeTag="handleChangeTag"
+    ></UserInforSideBar>
 
     <UserHistory :user="user" v-if="tagName == 'user-history'"></UserHistory>
     <UserAccount :user="user" v-else-if="tagName == 'user-account'"></UserAccount>

@@ -16,14 +16,17 @@ export const useAuthStore = defineStore('auth', () => {
   // 3. Actions: Functions to modify the state
   const setUser = (userData) => {
     user.value = userData
+    console.log('User set in store:', user.value) // Debugging log
   }
 
   // Action to check session on page load
   const checkAuth = async () => {
     isLoading.value = true
     try {
+      console.log('user  check auth', user.value)
       // Calls the backend to check if the HttpOnly cookie is still valid
-      const response = await axios.get('/me', { user })
+      const response = await axios.get('/login/me', { user: user.value })
+
       user.value = response.data.user
     } catch (error) {
       // If 401 Unauthorized, it means no valid cookie

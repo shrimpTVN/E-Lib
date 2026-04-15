@@ -15,6 +15,7 @@ import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import { useAuthStore } from '@/stores/auth.store.js'
+import { formatCurrency } from '@/utils/useFormat.js'
 
 const authStore = useAuthStore()
 const visibleDialog = ref(false)
@@ -228,6 +229,10 @@ const loadUsers = async () => {
   try {
     const response = await api.get('/readers')
     readers.value = response.data.readers
+    readers.value = readers.value.map((reader) => ({
+      ...reader,
+      tienPhat: formatCurrency(reader.tienPhat),
+    }))
   } catch (error) {
     console.error('Error loading readers:', error)
     addToast('error', 'Đã xảy ra lỗi', 'Không thể tải danh sách độc giả.')

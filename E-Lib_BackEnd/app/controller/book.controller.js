@@ -27,7 +27,7 @@ export const createBook = async (req, res, next) => {
 export const getAllBooks = async (req, res, next) => {
   try {
     // console.log("get all books");
-    console.log("Query parameters:", req.query);
+    // console.log("Query parameters:", req.query);
     const data = await bookService.getAllBooks({
       keyword: req.query.keyword,
       types: req.query.types,

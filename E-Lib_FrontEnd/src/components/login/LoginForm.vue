@@ -58,7 +58,9 @@ const handleLogin = async () => {
 
     if (res.data.token) {
       const decoded = jwtDecode(res.data.token)
+      console.log('Decoded JWT:', decoded)
       authStore.setUser(decoded)
+      console.log('User ', authStore.user)
       submitSuccess.value = res.data.message || 'Đăng nhập thành công'
 
       if (decoded.role === 'admin' || decoded.role === 'staff') {
@@ -84,7 +86,7 @@ const handleSocialLogin = (provider) => {
 
 <template>
   <section
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_20%_30%,#4f90bf,transparent_45%),radial-gradient(circle_at_80%_10%,#2f5d87,transparent_35%),linear-gradient(140deg,#0e2a47,#1a4f7d)] px-[14px] py-6 sm:px-6"
+    class="relative flex min-h-screen items-center justify-center overflow-hidden px-[14px] py-6 sm:px-6"
   >
     <div
       class="absolute -right-[70px] -top-[90px] h-80 w-80 rounded-full bg-[#b7deff] opacity-25 blur-[2px]"
@@ -99,7 +101,6 @@ const handleSocialLogin = (provider) => {
       <div class="mb-5 form-header">
         <p class="m-0 text-xs font-bold tracking-[1.8px] text-[#0f6cbf]">E-LIBRARY CTU</p>
         <h1 class="my-2 text-[26px] leading-[1.2] text-[#13263a] sm:text-[30px]">Dang nhap</h1>
-        <p class="m-0 text-[#5e7186]">Su dung email va mat khau de truy cap tai khoan cua ban.</p>
       </div>
 
       <Form class="grid gap-[14px]" :validation-schema="loginSchema" @submit="handleLogin">
