@@ -63,20 +63,20 @@ export function isAdmin(req, res, next) {
   next();
 }
 
-export function isStuff(req, res, next) {
+export function isStaff(req, res, next) {
   const token = req.cookies.token;
   const decoded = decodedToken(token);
-  if (!decoded || decoded.role !== "stuff") {
-    return res.status(403).json({ message: "Không có quyền stuff" });
+  if (!decoded || decoded.role !== "staff") {
+    return res.status(403).json({ message: "Không có quyền staff" });
   }
   next();
 }
 
-export function isAdminOrStuff(req, res, next) {
+export function isAdminOrStaff(req, res, next) {
   const token = req.cookies.token;
   const decoded = decodedToken(token);
-  if (!decoded || (decoded.role !== "admin" && decoded.role !== "stuff")) {
-    return res.status(403).json({ message: "Không có quyền admin hoặc stuff" });
+  if (!decoded || (decoded.role !== "admin" && decoded.role !== "staff")) {
+    return res.status(403).json({ message: "Không có quyền admin hoặc staff" });
   }
   next();
 }
@@ -96,7 +96,7 @@ export default {
   decodedToken,
   verifyToken,
   isAdmin,
-  isStuff,
-  isAdminOrStuff,
+  isStaff,
+  isAdminOrStaff,
   isUser,
 };

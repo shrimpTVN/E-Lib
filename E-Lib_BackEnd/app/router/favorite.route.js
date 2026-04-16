@@ -5,7 +5,7 @@ import { verifyToken, isUser } from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 router
-  .route("/", verifyToken, isUser)
+  .route("/", [verifyToken, isUser])
   .get(favoriteController.getAllFavorites)
   .post(favoriteController.addFavorite)
   .patch(favoriteController.updateFavorite)

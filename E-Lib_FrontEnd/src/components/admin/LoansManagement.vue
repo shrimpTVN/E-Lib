@@ -15,6 +15,10 @@ import { useAppToast } from '@/utils/useAppToast'
 const authStore = useAuthStore()
 const { addToast } = useAppToast()
 const query = ref('')
+
+const visibleDialog = ref(false)
+const selectedLoan = ref(null)
+
 const selectedStatus = ref()
 const loading = ref(false)
 const loans = ref([])
@@ -31,12 +35,12 @@ const statusSeverity = {
 
 const arrStatus = [
   'Chờ duyệt',
-  'Đã hủy nhận',
-  'Bị từ chối',
   'Chờ nhận',
   'Đang mượn',
-  'Đã trả',
   'Quá hạn',
+  'Đã trả',
+  'Đã hủy nhận',
+  'Bị từ chối',
   'Thất lạc',
 ]
 
@@ -69,12 +73,25 @@ const filteredRows = computed(() => {
 })
 
 const normalizeLoanData = (loans) => {
-  console.log(loans)
+  // console.log(loans)
   return loans.map((loan) => {
     const cntStatus = loan.TRANG_THAI.length
 
     const ngayCapNhat = cntStatus > 0 ? loan.TRANG_THAI[cntStatus - 1].ngayTao : loan.ngayMuon
-    loan.ngayCapNhat = new Date(ngayCapNhat).toLocaleDateString('vi-VN')
+    loan.ngayCapNhat = new Date(ngayCapNhat).toLocaleDateString('en-VN')
+
+    if (loan.isQuaHan && loan.hanTra) {
+      loan.soNgayQuaHan = Math.ceil(
+        (new Date() - new Date(loan?.hanTra).getTime()) / (1000 * 60 * 60 * 24),
+      )
+    } else if (loan.trangThaiHienTai === 'Chờ nhận') {
+      // console.log(loan)
+      loan.soNgayQuaHan = Math.ceil(
+        (new Date() - new Date(loan?.ngayCapNhat).getTime()) / (1000 * 60 * 60 * 24),
+      )
+      // console.log('Ngày cập nhật:', loan.ngayCapNhat)
+      // console.log('Số ngày quá hạn:', loan.soNgayQuaHan)
+    }
     return loan
   })
 }
@@ -98,15 +115,28 @@ const handleAddStatus = async (newStatus, selectedLoan) => {
   }
 }
 
+const openDialog = (loan) => {
+  console.log(loan)
+  selectedLoan.value = loan
+  visibleDialog.value = true
+}
+
+const closeDialog = () => {
+  visibleDialog.value = false
+  selectedLoan.value = null
+}
+
 const loadLoans = async () => {
   try {
     loading.value = true
     const res = await api.get('/borrow')
     // console.log('API response:', res.data)
     loans.value = res.data.loans
+
     loans.value = normalizeLoanData(loans.value)
     // console.log('Loaded loans:', loans.value)
   } catch (error) {
+    console.error('Error loading loans:', error)
     addToast('error', 'Lỗi', 'Không thể tải danh sách mượn sách.')
   } finally {
     loading.value = false
@@ -161,11 +191,14 @@ onMounted(() => {
             :value="slotProps.data.trangThaiHienTai"
             :severity="statusSeverity[slotProps.data.trangThaiHienTai]"
           />
+          <p v-if="slotProps.data?.soNgayQuaHan" class="text-sm font-bold">
+            ({{ slotProps.data.soNgayQuaHan }} ngày)
+          </p>
         </template>
       </Column>
       <Column field="ngayCapNhat" header="Ngày cập nhật" sortable class="w-[10rem]" />
 
-      <Column header="Hành động" class="max-w-[6rem] text-center">
+      <Column header="Hành động" class="max-w-[7.6rem] text-center">
         <template #body="slotProps">
           <div v-if="operation[slotProps.data.trangThaiHienTai]" class="flex gap-1">
             <Button
@@ -187,9 +220,51 @@ onMounted(() => {
           </div>
         </template>
       </Column>
+      <Column header="Chi tiết" class="max-w-[3rem] text-center">
+        <template #body="slotProps">
+          <button class="ml-4" rounded @click="openDialog(slotProps.data)">
+            <i class="pi pi-clipboard"></i>
+          </button>
+        </template>
+      </Column>
       <template #empty>
         <div class="py-6 text-center text-sm text-slate-500">Không tìm thấy dữ liệu phù hợp.</div>
       </template>
     </DataTable>
   </div>
+
+  <Dialog
+    v-model:visible="visibleDialog"
+    header="Lịch sử trạng thái mượn sách"
+    modal
+    class="w-full max-w-5xl"
+    @hide="closeDialog"
+  >
+    <div class="max-h-[26rem] overflow-y-auto mb-4">
+      <div
+        class="registing-status-container text-slate-700 mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
+      >
+        <p class="text-lg font-bold">Đăng ký mượn sách</p>
+        <p>Người thực hiện: Độc giả</p>
+        <p>Ngày thực hiện: {{ new Date(selectedLoan.ngayMuon).toLocaleDateString('en-VN') }}</p>
+      </div>
+
+      <div
+        v-for="trangThai in selectedLoan.TRANG_THAI"
+        class="registing-status-container text-slate-700 mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
+      >
+        <p class="text-lg font-bold">{{ trangThai.tenTrangThai }}</p>
+        <p>Người thực hiện: {{ trangThai.idNhanVien.hoTen }}</p>
+        <p>Ngày thực hiện: {{ new Date(trangThai.ngayTao).toLocaleDateString('en-VN') }}</p>
+      </div>
+    </div>
+
+    <Button
+      class="float-right"
+      type="button"
+      label="Đóng"
+      severity="secondary"
+      @click="closeDialog"
+    ></Button>
+  </Dialog>
 </template>

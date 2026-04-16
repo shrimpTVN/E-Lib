@@ -3,7 +3,7 @@ import * as loanController from "../controller/loan.controller.js";
 import {
   verifyToken,
   isUser,
-  isAdminOrStuff,
+  isAdminOrStaff,
 } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
@@ -13,13 +13,15 @@ router
   .get(verifyToken, loanController.getAllLoans)
   .post([verifyToken, isUser], loanController.createLoan);
 
-router.route("/update-status").patch(loanController.updateLoanStatus);
-router.route("/extend/:id").patch(loanController.extendLoan);
+router
+  .route("/update-status")
+  .patch(verifyToken, loanController.updateLoanStatus);
+router.route("/extend/:id").patch(verifyToken, loanController.extendLoan);
 
 router
-  .route("/:id")
+  .route("/:id", verifyToken)
   .get(loanController.getLoanById)
-  .patch([verifyToken, isAdminOrStuff], loanController.updateLoan)
-  .delete([verifyToken, isUser], loanController.deleteLoan);
+  .patch(isAdminOrStaff, loanController.updateLoan)
+  .delete(isUser, loanController.deleteLoan);
 
 export default router;

@@ -22,10 +22,6 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Book API");
 });
 
-app.get("/api/me", verifyToken, (req, res) => {
-  res.status(200).json({ user: req.user });
-});
-
 // catch-all route and pass for the matched route
 router(app);
 

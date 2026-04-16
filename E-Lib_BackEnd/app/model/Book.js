@@ -7,6 +7,7 @@ const bookSchema = new mongoose.Schema(
     maSach: { type: String, unique: true, uppercase: true },
     theLoai: { type: String, required: true },
     moTa: { type: String },
+    danhGia: { type: Number, min: 0, max: 5, default: 0 },
     donGia: { type: Number, required: true, min: 0 },
     soLuong: { type: Number, required: true, min: 0 }, // Total copies
     conLai: { type: Number, min: 0 }, // Available copies

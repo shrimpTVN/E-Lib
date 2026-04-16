@@ -26,16 +26,31 @@ export const getAllHistoriesByReaderId = async (req, res, next) => {
   try {
     const userId = req.params.id;
 
+    // console.log("getAllHistoriesByReaderId called with id:", userId);
+
     if (!isValidObjectId(userId)) {
+      // console.log("Invalid reader id, skipping history query:", userId);
       return next(new AppError("User ID is required", 400));
     }
 
     const history = await historyService.getAllHistoriesByReaderId(userId);
-
+    // console.log("History found:", history);
     if (!history) {
       return next(new AppError("History not found", 404));
     }
-    res.status(200).json(history);
+
+    res.status(200).json({ history });
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+};
+
+export const getBanDayByReaderId = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const banDays = await historyService.countBanDayByReaderId(userId);
+    // console.log("Ban days for user", userId, ":", banDays);
+    res.status(200).json({ banDays });
   } catch (error) {
     next(new AppError(error.message, 500));
   }

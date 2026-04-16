@@ -13,7 +13,7 @@ const props = defineProps({
 })
 
 const loan = ref(props.loan)
-console.log('Received loan data:', loan.value)
+// console.log('Received loan data:', loan.value)
 const messageType = ref('info')
 
 const normalizeLoanData = () => {
@@ -82,7 +82,9 @@ const normalizeLoanData = () => {
 normalizeLoanData()
 
 const bgType = () => {
-  if (!loan.value.soNgayConLai) return ''
+  console.log('Calculating background type for loan:', loan.value)
+  if (loan.value.isReturned || !loan.value.soNgayConLai || loan.value.trangThaiHienTai === 'Đã trả')
+    return ''
 
   if (loan.value.soNgayConLai > 3 && loan.value.soNgayConLai <= 7) {
     return 'bg-yellow-100'
@@ -125,7 +127,10 @@ const handleExtendLoan = () => {
     <div class="flex gap-3">
       <div class="h-full w-24 shrink-0 overflow-hidden rounded-md bg-slate-100 my-auto">
         <img
-          :src="loan.idSach.biaSach"
+          :src="
+            loan.idSach.biaSach ||
+            'https://res.cloudinary.com/depaiphq0/image/upload/v1775474472/pngtree-an-open-book-is-shown-with-a-yellow-and-blue-logo-png-image_15675075_f99kmp.png'
+          "
           :alt="loan.idSach.tenSach"
           class="h-36 w-full object-cover"
           loading="lazy"
@@ -159,12 +164,19 @@ const handleExtendLoan = () => {
           </div>
 
           <div class="status-container">
-            <div v-if="loan.trangThaiHienTai === 'Đang mượn'" class="date-container mt-2">
+            <div
+              v-if="
+                loan.trangThaiHienTai === 'Đang mượn' ||
+                loan.trangThaiHienTai === 'Quá hạn' ||
+                loan.trangThaiHienTai === 'Đã trả'
+              "
+              class="date-container mt-2"
+            >
               <span
                 class="mt-2 text-sm font-semibold text-slate-700 rounded-lg py-1 px-2"
                 :class="bgType()"
               >
-                {{ loan.isReturned ? '' : `Hạn trả: ${loan.hanTra}` }}
+                {{ `Hạn trả: ${loan.hanTra}` }}
               </span>
             </div>
             <div class="flex justify-between items-center mt-4">

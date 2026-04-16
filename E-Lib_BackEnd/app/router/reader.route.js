@@ -12,8 +12,9 @@ router
 router
   .patch("/:id/change-password", readController.changePassword)
   .patch("/:id/block", readController.blockReader)
-  .post("/:id/history", historyController.createHistory)
-  .get("/:id/history", historyController.getAllHistoriesByReaderId);
+  .get("/:id/history", historyController.getAllHistoriesByReaderId)
+  .get("/:id/ban-days", historyController.getBanDayByReaderId)
+  .post("/:id/history", historyController.createHistory);
 
 router
   .route("/:id")

@@ -1,6 +1,6 @@
-# E-Lib Backend Architecture Context (Updated from Source Code)
+# E-Lib Backend Architecture Context
 
-Tai lieu nay duoc cap nhat truc tiep tu ma nguon trong `E-Lib_BackEnd` de FE co the tich hop chinh xac va on dinh.
+Document này được cập nhật trực tiếp từ mã nguồn trong `E-Lib_BackEnd`. Dùng làm tài liệu tích hợp chính xác cho Frontend.
 
 ## 1) Domain Model (ERD)
 
@@ -121,7 +121,65 @@ erDiagram
         READER ||--o{ HISTORY : "idDocGia"
 ```
 
-## 2) Runtime Architecture (Vue <-> Express <-> MongoDB)
+## 2) Project Structure (Backend)
+
+```
+E-Lib_BackEnd/
+├── server.js                 # Entry point, DB connection
+├── app.js                    # Express app setup, middleware config
+├── package.json              # Dependencies (Express, Mongoose, JWT, etc.)
+└── app/
+    ├── config/
+    │   └── index.js          # Environment config loader
+    ├── controller/           # Request handlers, business logic coordination
+    │   ├── book.controller.js
+    │   ├── error.controller.js
+    │   ├── favorite.controller.js
+    │   ├── history.controller.js
+    │   ├── loan.controller.js
+    │   ├── login.controller.js
+    │   ├── publisher.controller.js
+    │   ├── reader.controller.js
+    │   ├── review.controller.js
+    │   └── staff.controller.js
+    ├── middleware/           # Auth, upload processing
+    │   ├── auth.middleware.js  # JWT token verification
+    │   └── upload.js           # Cloudinary multipart/form-data processing
+    ├── model/               # Mongoose schemas + models
+    │   ├── Book.js
+    │   ├── Favorite.js
+    │   ├── History.js
+    │   ├── Loan.js
+    │   ├── Publisher.js
+    │   ├── Reader.js
+    │   ├── Review.js
+    │   └── Staff.js
+    ├── router/              # Route definitions + mounting
+    │   ├── routes.js           # Main router, mounts all route modules
+    │   ├── book.route.js
+    │   ├── borrow.route.js
+    │   ├── favorite.route.js
+    │   ├── login.route.js
+    │   ├── publisher.route.js
+    │   ├── reader.route.js
+    │   ├── register.route.js
+    │   ├── review.route.js
+    │   └── staff.route.js
+    ├── service/             # Business logic, database queries
+    │   ├── book.service.js
+    │   ├── favorite.service.js
+    │   ├── history.service.js
+    │   ├── loan.service.js
+    │   ├── publisher.service.js
+    │   ├── reader.service.js
+    │   ├── review.service.js
+    │   └── staff.service.js
+    └── utils/               # Utilities
+        ├── ApiError.js         # Custom error class
+        └── mongodb.util.js     # MongoDB connection utility
+```
+
+## 3) Runtime Architecture (Vue <-> Express <-> MongoDB)
 
 ```mermaid
 flowchart LR
@@ -135,207 +193,390 @@ flowchart LR
         end
 
         subgraph BE[Express Backend]
-                APP[app.js]
+                APP[app.js<br/>Middleware Setup]
                 RT[routes.js + route modules]
-                MW[auth middleware + upload middleware]
+                MW[Auth Middleware<br/>Upload Middleware]
                 CTL[Controllers]
                 SRV[Services]
                 MDL[Mongoose Models]
-                ERR[Global Error Controller]
+                ERR[Global Error Handler]
         end
 
         DB[(MongoDB)]
-        CLD[(Cloudinary)]
+        CLD[(Cloudinary<br/>Image Upload)]
 
         U --> R --> V --> SVC --> AX
-        AX -->|HTTP JSON + Cookie token| APP
+        AX -->|HTTP JSON<br/>Cookie: token| APP
         APP --> RT --> MW --> CTL --> SRV --> MDL --> DB
         CTL --> ERR
         MW -->|multipart/form-data| CLD
 ```
 
-## 3) Entry Points, Config, and Policies
+## 4) Entry Points, Config, and Policies
 
-### 3.1 App entrypoints
+### 4.1 Application Entry Points
 
-- `server.js`: connect MongoDB, start server.
-- `app.js`: setup middleware (`express.json`, `cors`, `cookie-parser`), mount routes, global error handler.
-- `app/router/routes.js`: mount all API groups.
+- **`server.js`**: Khởi động server, kết nối MongoDB, lắng nghe port
+- **`app.js`**: Cấu hình Express app, middleware, mounted routes, error handler
+- **`app/router/routes.js`**: Mount tất cả API route groups
 
-### 3.2 Environment/config
+### 4.2 Middleware Stack (app.js)
 
-- `.env` duoc nap trong `app/config/index.js`.
-- Bien quan trong:
-  - `PORT`
-  - `MONGODB_URI`
-  - `JWT_SECRET`
-  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+```javascript
+// Thứ tự xử lý:
+1. express.json()           // Parse request body
+2. cors({ origin: "http://localhost:3001", credentials: true })
+3. cookieParser()           // Parse cookies (HttpOnly token)
+4. routes(app)              // API routing
+5. Global error handler     // Catch-all error handler
+```
 
-### 3.3 CORS and cookie policy (quan trong voi FE)
+**QUAN TRỌNG cho FE**:
 
-- CORS hien tai cho phep duy nhat origin: `http://localhost:3001`.
-- `credentials: true` dang bat.
-- Token dang duoc luu qua cookie `token` (HttpOnly), khong phai chuan Bearer header.
+- CORS hiện chỉ cho phép origin `http://localhost:3001`
+- Nếu FE chạy ở host/port khác, phải cập nhật `origin` trong CORS config
+- Token được lưu ở cookie HttpOnly (tên: `token`), không phải Bearer header
 
-Chinh sach FE can ap dung:
+### 4.3 Configuration Management
 
-- Tat ca request can auth phai gui `withCredentials: true`.
-- Neu FE chay khac host/port voi CORS config hien tai, backend phai cap nhat `origin`.
+Biến môi trường được load từ `.env` (qua `app/config/index.js`):
 
-## 4) Authentication and Authorization Contract
+```env
+PORT=3000
+MONGODB_URI=mongodb://...
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
 
-### 4.1 Login/logout/me
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
 
-- `POST /api/login`
-  - body: `{ username, password }`
-  - success: set cookie `token`, tra ve `{ user, token, message }`
-- `POST /api/login/logout`
-  - clear cookie `token`
-- `GET /api/me`
-  - yeu cau cookie hop le
-  - tra ve `{ user: { id, role } }`
+NODE_ENV=development
+```
 
-### 4.2 Role model dang dung trong code
+### 4.4 Dependencies (package.json)
 
-- Reader: `role = ""` (chuoi rong)
-- Staff/Admin: `role = user.vaiTro` (`admin` hoac `staff`)
+**Core Framework**:
 
-Luu y thuc te:
+- `express@5.2.1` - Web framework
+- `mongoose@9.3.3` - MongoDB ODM
 
-- Mot so middleware role dang check chuoi `"stuff"` thay vi `"staff"`.
-- FE nen uu tien check role `admin` cho cac tinh nang quan tri nhay cam, va xem `staff` la role van hanh.
+**Authentication & Security**:
 
-## 5) API Surface (Mounted Routes)
+- `jsonwebtoken@9.0.3` - JWT token generation/verification
+- `bcryptjs@3.0.3` - Password hashing
+- `cookie-parser@1.4.7` - Cookie parsing
+
+**File Upload**:
+
+- `multer@2.1.1` - Multipart form-data processing
+- `cloudinary@2.9.0` - Cloud image storage
+- `multer-storage-cloudinary@2.2.1` - Multer integration
+
+**Utilities**:
+
+- `dotenv@17.3.1` - Environment variables
+- `cors@2.8.6` - Cross-origin requests
+- `node-cron@4.2.1` - Scheduled tasks
+
+## 5) Authentication & Authorization Contract
+
+### 5.1 Login / Register / Logout
+
+**POST `/api/login`**
+
+```
+Request:  { username, password }
+Response: { success: true, user: { _id, maNhanVien, vaiTro }, token, message }
+          or { success: false, message } (non-200 status)
+Cookies:  Set token (HttpOnly)
+```
+
+**POST `/api/register`**
+
+```
+Request:  { hoTen, email, password, confirmPassword }
+Response: { success: true, data: newReader, message }
+```
+
+**POST `/api/login/logout`**
+
+```
+Response: { success: true, message }
+Cookies:  Clear token
+```
+
+**GET `/api/me` (requires valid token cookie)**
+
+```
+Response: { user: { _id, email, vaiTro } }
+Status:   401 if token invalid/expired
+```
+
+### 5.2 Role Model & Authorization
+
+**Roles**:
+
+- `reader` (role = "" / empty string) - Độc giả bình thường
+- `staff` (role = "staff") - Nhân viên thư viện
+- `admin` (role = "admin") - Quản trị viên
+
+**Middleware Usage**:
+
+- `verifyToken` - Kiểm tra JWT hợp lệ
+- Route-specific role checks (admin-only, staff-only, reader-only)
+
+⚠️ **Known Issue**: Một số middleware check typo `"stuff"` thay vì `"staff"`
+
+## 6) Complete API Routes Reference
 
 Base URL: `http://<host>:<port>`
 
-### 5.1 Auth
+### 6.1 Authentication Routes (`/api/`)
 
-- `POST /api/login`
-- `POST /api/login/logout`
-- `POST /api/register`
-- `GET /api/me`
+```
+POST   /api/login              # Đăng nhập
+POST   /api/login/logout       # Đăng xuất (xóa cookie)
+POST   /api/register           # Đăng ký độc giả mới
+GET    /api/me                 # Lấy thông tin user hiện tại (require auth)
+```
 
-### 5.2 Books (`/api/books`)
+### 6.2 Books Management (`/api/books`)
 
-- `GET /api/books`
-  - query: `keyword`, `theLoai`, `tacGia`, `page`, `limit`
-  - response:
-    - `books`: danh sach sach
-    - `publisherNames`: danh sach ten NXB
-    - `types`: danh sach the loai
-    - `authors`: danh sach tac gia
-- `POST /api/books`
-  - multipart/form-data, upload field `image` (toi da 5)
-  - tao sach
-- `GET /api/books/:id`
-  - response: `{ book, relatedBooks }`
-- `PATCH /api/books/:id`
-  - multipart/form-data, upload field `image` (toi da 5)
-- `DELETE /api/books/:id`
+```
+GET    /api/books              # Danh sách sách (có filter)
+POST   /api/books              # Thêm sách (require auth + admin)
+GET    /api/books/:id          # Chi tiết sách + sách liên quan
+PATCH  /api/books/:id          # Cập nhật sách (require auth + admin)
+DELETE /api/books/:id          # Xóa sách (require auth + admin)
+```
 
-### 5.3 Borrow/Loan (`/api/borrow`)
+**Query parameters (GET /api/books)**:
 
-- `GET /api/borrow` (can auth)
-  - reader: lay loan theo chinh minh
-  - admin/staff: lay tat ca
-- `POST /api/borrow` (can auth + role reader)
-  - body:
-    - `idDocGia`: ObjectId
-    - `idSach`: array ObjectId
-  - rang buoc nghiep vu:
-    - moi doc gia toi da 5 sach dang muon
-    - co loan qua han thi khong duoc muon them
-- `GET /api/borrow/:id`
-- `PATCH /api/borrow/:id` (can auth + role admin/staff theo middleware)
-- `DELETE /api/borrow/:id` (can auth + role reader)
+- `keyword` - Tìm kiếm theo tên/tác giả
+- `theLoai` - Lọc theo thể loại
+- `tacGia` - Lọc theo tác giả
+- `page` - Trang (default: 1)
+- `limit` - Số sách/trang (default: 12)
 
-### 5.4 Favorites (`/api/favorites`)
+**Response**:
 
-Toan bo route yeu cau auth + reader middleware:
+```json
+{
+  "books": [...],
+  "publisherNames": [...],
+  "types": [...],
+  "authors": [...]
+}
+```
 
-- `GET /api/favorites`
-  - lay theo `idDocGia` tu query hoac body
-- `POST /api/favorites`
-  - body: `{ idDocGia, idSach }`
-- `PATCH /api/favorites`
-  - body: `{ idDocGia, idSach, soLuong }`
-- `DELETE /api/favorites`
-  - body: `{ idDocGia, idSach }`
+### 6.3 Borrowing/Loans (`/api/borrow`)
 
-### 5.5 Readers (`/api/readers`)
+```
+GET    /api/borrow             # Danh sách phiếu mượn (require auth)
+POST   /api/borrow             # Tạo phiếu mượn (require auth + reader)
+GET    /api/borrow/:id         # Chi tiết phiếu mượn
+PATCH  /api/borrow/:id         # Cập nhật phiếu (admin/staff)
+DELETE /api/borrow/:id         # Xóa phiếu (require auth + reader)
+```
 
-- `GET /api/readers`
-- `GET /api/readers/:id`
-- `POST /api/readers`
-- `PATCH /api/readers/:id`
-- `PATCH /api/readers/:id/change-password`
-  - body: `{ currentPass, newPass }`
-- `PATCH /api/readers/:id/block`
-  - body can thong tin xac thuc staff: `{ staff: { _id, password }, isActive }`
-- `DELETE /api/readers/:id`
-- `POST /api/readers/:id/history`
-  - body: `{ type: point|day|money, number, lyDo }`
+**Business Rules**:
 
-### 5.6 Staffs (`/api/staffs`)
+- Mỗi độc giả tối đa 5 sách đang mượn
+- Không được mượn thêm nếu có phiếu quá hạn
 
-- `GET /api/staffs`
-- `POST /api/staffs`
-- `GET /api/staffs/:id`
-- `PATCH /api/staffs/:id`
-- `DELETE /api/staffs/:id`
-- `PATCH /api/staffs/:id/active`
-  - body: `{ staff: { _id, password } }`
+### 6.4 Favorites (`/api/favorites`)
 
-### 5.7 Publishers (`/api/publishers`)
+```
+GET    /api/favorites          # Danh sách yêu thích (require auth + reader)
+POST   /api/favorites          # Thêm vào yêu thích
+PATCH  /api/favorites          # Cập nhật số lượng
+DELETE /api/favorites          # Xóa khỏi yêu thích
+```
 
-- `GET /api/publishers`
-- `POST /api/publishers`
-- `GET /api/publishers/:id`
-- `PUT /api/publishers/:id`
+**Body**:
 
-## 6) Response/Error Conventions for FE
+```json
+{
+  "idDocGia": "ObjectId",
+  "idSach": "ObjectId"
+}
+```
 
-Codebase hien tai chua dong nhat 100% response schema. FE nen xu ly theo nguyen tac sau:
+### 6.5 Readers Management (`/api/readers`)
 
-- Auth/login sai credentials co endpoint tra `200` voi message loi (khong phai 4xx).
-- Nhieu endpoint thanh cong tra object data truc tiep, khong boc `data`.
-- Global error handler trong production thuong tra:
-  - `{ status, message }`
-- Mot so controller bat loi cuc bo tra:
-  - `{ message: "..." }`
+```
+GET    /api/readers            # Danh sách độc giả (require auth + admin)
+GET    /api/readers/:id        # Chi tiết độc giả
+POST   /api/readers            # Tạo độc giả mới
+PATCH  /api/readers/:id        # Cập nhật thông tin (require auth)
+PATCH  /api/readers/:id/change-password    # Đổi mật khẩu
+PATCH  /api/readers/:id/block               # Khóa/mở khóa độc giả
+DELETE /api/readers/:id        # Xóa độc giả
+POST   /api/readers/:id/history             # Ghi lịch sử (điểm, tiền phạt, ngày)
+```
 
-Khuyen nghi adapter FE:
+### 6.6 Staff Management (`/api/staffs`)
 
-- Uu tien doc `message` neu co.
-- Kiem tra du lieu chinh theo fallback keys: `data`, `books`, `readers`, `loans`, `favorites`, hoac object root.
-- Xu ly 401/403 bang redirect login va clear state.
+```
+GET    /api/staffs             # Danh sách nhân viên (require auth + admin)
+POST   /api/staffs             # Tạo nhân viên
+GET    /api/staffs/:id         # Chi tiết nhân viên
+PATCH  /api/staffs/:id         # Cập nhật thông tin
+DELETE /api/staffs/:id         # Xóa nhân viên
+PATCH  /api/staffs/:id/active  # Kích hoạt/vô hiệu hóa
+```
 
-## 7) Data-level Business Rules FE Should Know
+### 6.7 Publishers Management (`/api/publishers`)
 
-- Reader/Staff password duoc hash truoc khi luu (pre-save hook).
-- Ma tu dong:
-  - Reader: `DGxxxx`
-  - Staff: `NVxxxx`
-  - Publisher: `NXBxxxx`
-- Review schema co unique index `(idDocGia, idSach)` (1 doc gia danh gia 1 sach toi da 1 lan).
-- Loan co cac co trang thai va flag: `trangThaiHienTai`, `TRANG_THAI`, `isQuaHan`, `isReturned`.
-- Upload anh sach di qua Cloudinary middleware, folder theo `elib_books/<maSach>`.
+```
+GET    /api/publishers         # Danh sách nhà xuất bản
+POST   /api/publishers         # Thêm nhà xuất bản
+GET    /api/publishers/:id     # Chi tiết nhà xuất bản
+PUT    /api/publishers/:id     # Cập nhật nhà xuất bản
+```
 
-## 8) Gap Notes (Code vs Architecture)
+### 6.8 Reviews (`/api/reviews`)
 
-Nhung diem nay can FE biet de tranh hieu sai context:
+⚠️ **Status**: Route chưa được mount trong `routes.js`
 
-- Co `review.controller.js` + `review.service.js` + model, nhung chua duoc mount route trong `routes.js`.
-- `deletePublisher` co controller/service nhung route publisher chua expose endpoint `DELETE`.
-- Auth middleware role check co typo `stuff`/`staff`.
-- `reader.service.updateReader` dang khong tra `new: true`, nen response update co the la ban ghi truoc cap nhat.
-- `book.service.getAllBooks` dang loc `TacGia` (chu hoa T) trong khi schema field la `tacGia`.
+```
+GET    /api/reviews            # Danh sách đánh giá sách
+POST   /api/reviews            # Thêm đánh giá (require auth + reader)
+PATCH  /api/reviews/:id        # Cập nhật đánh giá
+DELETE /api/reviews/:id        # Xóa đánh giá
+```
 
-## 9) FE Integration Checklist
+## 7) Response & Error Handling Conventions
 
-- Dat `withCredentials: true` trong Axios cho request can auth.
-- Dong bo CORS origin voi domain FE thuc te.
-- Dung route map trong Muc 5 lam source of truth.
-- Chuan hoa parser response tai FE service layer de chiu duoc response khong dong nhat.
-- Xu ly message tieng Viet tu backend de hien thi thong bao dung ngu canh.
+### 7.1 Success Response Formats
+
+Backend không hoàn toàn đồng nhất. Frontend nên xử lý:
+
+```javascript
+// Format 1: Direct data return
+{ success: true, message: "...", data: {...} }
+
+// Format 2: Object root
+{ success: true, message: "...", books: [...] }
+
+// Format 3: Direct object
+{ id: "...", tenSach: "...", ... }
+```
+
+### 7.2 Error Response Formats
+
+```javascript
+// Format 1: Global error handler
+{ status: "fail", message: "..." }
+
+// Format 2: Controller catch
+{ message: "..." }
+
+// Format 3: Validation error
+{ success: false, message: "..." }
+```
+
+### 7.3 HTTP Status Codes
+
+- `200` - Success (including login failures with message)
+- `201` - Created
+- `400` - Bad request / Validation error
+- `401` - Unauthorized (missing/invalid token)
+- `403` - Forbidden (insufficient permissions)
+- `404` - Not found
+- `500` - Server error
+
+### 7.4 Frontend Adapter Recommendations
+
+```javascript
+// Standardize response parsing
+async function parseResponse(response) {
+  const data = response.data;
+
+  // Priority order for message
+  const message = data.message || data.errors?.[0]?.message;
+
+  // Priority order for actual data
+  const payload =
+    data.data || data.books || data.readers || data.loans || data || {};
+
+  return { message, payload, ...data };
+}
+
+// Handle auth errors
+if (response.status === 401) {
+  clearAuthState();
+  router.push("/login");
+}
+```
+
+## 8) Data Models & Business Rules
+
+### 8.1 Auto-Generated IDs
+
+- **Reader**: `DGxxxx` (Độc Giả)
+- **Staff**: `NVxxxx` (Nhân Viên)
+- **Publisher**: `NXBxxxx` (Nhà Xuất Bản)
+- **Book**: `Sxxxx` (Sách)
+
+### 8.2 Key Constraints
+
+- **Reader** password: Pre-hashed (bcrypt) before save
+- **Staff** password: Pre-hashed (bcrypt) before save
+- **Review**: Unique constraint on `(idDocGia, idSach)` - 1 độc giả chỉ đánh giá 1 sách một lần
+- **Favorite**: Unique constraint on `(idDocGia, idSach)`
+
+### 8.3 Loan States
+
+```javascript
+{
+  trangThaiHienTai: String,      // Current state
+  TRANG_THAI: Array,              // State history
+  isGiaHan: Boolean,              // Extended flag
+  isQuaHan: Boolean,              // Overdue flag
+  isReturned: Boolean             // Returned flag
+}
+```
+
+### 8.4 File Upload
+
+- **Destination**: Cloudinary (cloud storage)
+- **Folder Structure**: `elib_books/<maSach>/`
+- **Max Files**: 5 per request
+- **Supported Fields**: `biaSach` (cover), `hinhAnh` (multiple images)
+
+## 9) Known Issues & Gaps
+
+### 9.1 Incomplete Features
+
+- ❌ Reviews API: Routes không được mount trong `routes.js`
+- ❌ Delete Publisher: Controller/service tồn tại nhưng route không expose
+
+### 9.2 Code Inconsistencies
+
+- ⚠️ Auth middleware: Role check có typo `"stuff"` vs `"staff"`
+- ⚠️ Reader.updateReader(): Không trả `new: true`, response có thể là dữ liệu cũ
+- ⚠️ Book.getAllBooks(): Filter `TacGia` (uppercase) nhưng schema là `tacGia`
+- ⚠️ Response schema chưa hoàn toàn đồng nhất giữa các endpoint
+
+### 9.3 Recommendations
+
+1. **Standardize responses**: Tất cả endpoint nên trả `{ success, message, data }`
+2. **Fix typos**: `stuff` → `staff` trong middleware
+3. **Complete features**: Mount review routes, add delete publisher
+4. **Add validation**: Rõ ràng hơn trong schema/controller
+5. **Document errors**: API error codes and meanings
+
+## 10) Frontend Integration Checklist
+
+- [ ] Set `withCredentials: true` trong Axios config cho mọi request có auth
+- [ ] Đồng bộ CORS `origin` với domain FE thực tế (không phải localhost:3001)
+- [ ] Implement response parser để xử lý response không đồng nhất
+- [ ] Handle 401 errors: redirect đến login, clear auth state
+- [ ] Display Vietnamese messages từ backend thông báo
+- [ ] Test borrow business rule: max 5 sách, không mượn khi quá hạn
+- [ ] Test file upload: Verify Cloudinary integration
+- [ ] Test pagination: `page` và `limit` query params
+- [ ] Handle soft delete: Kiểm tra `isActive` flag trong response
+- [ ] Role-based rendering: Check `user.vaiTro` cho admin/staff features

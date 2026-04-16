@@ -14,6 +14,7 @@ const loanSchema = new mongoose.Schema(
     },
     ngayMuon: { type: Date, default: Date.now, required: true },
     ngayTra: { type: Date, default: null },
+    hanTra: { type: Date, default: null },
     trangThaiHienTai: {
       type: String,
       enum: [
@@ -43,6 +44,7 @@ const loanSchema = new mongoose.Schema(
               "Đã nhận",
               "Đã trả",
               "Thất lạc",
+              "Quá hạn",
             ],
             required: true,
           },

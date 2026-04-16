@@ -54,7 +54,7 @@ const screenComponentMap = {
   personal: PersonalInfor,
 }
 
-const activeScreen = ref('loans')
+const activeScreen = ref('books')
 
 const activeComponent = computed(() => screenComponentMap[activeScreen.value] || OverviewPanel)
 

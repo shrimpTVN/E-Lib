@@ -6,6 +6,7 @@ import favoriteRoute from "./favorite.route.js";
 import readerRoute from "./reader.route.js";
 import staffRoute from "./staff.route.js";
 import publisherRoute from "./publisher.route.js";
+import reviewRoute from "./review.route.js";
 
 const router = (app) => {
   app.use("/api/login", loginRoute);
@@ -16,6 +17,7 @@ const router = (app) => {
   app.use("/api/readers", readerRoute);
   app.use("/api/staffs", staffRoute);
   app.use("/api/publishers", publisherRoute);
+  app.use("/api/reviews", reviewRoute);
 };
 
 export default router;

@@ -245,7 +245,14 @@ onMounted(async () => {
             <div
               class="book-image w-28 h-28 bg-gray-200 rounded-md text-center flex items-center justify-center"
             >
-              <img :src="favorite.idSach.biaSach" alt="Bia Sach" class="max-h-28 text-center" />
+              <img
+                :src="
+                  favorite.idSach.biaSach ||
+                  'https://res.cloudinary.com/depaiphq0/image/upload/v1775474472/pngtree-an-open-book-is-shown-with-a-yellow-and-blue-logo-png-image_15675075_f99kmp.png'
+                "
+                alt="Bia Sach"
+                class="max-h-28 text-center"
+              />
             </div>
 
             <div class="book-infor-favorite ml-4">

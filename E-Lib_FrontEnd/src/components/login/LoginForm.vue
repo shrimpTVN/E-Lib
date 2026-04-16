@@ -4,6 +4,7 @@ import * as yup from 'yup'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import Password from 'primevue/password'
 import api from '@/api/axios'
 import { jwtDecode } from 'jwt-decode'
 import { useAuthStore } from '@/stores/auth.store'
@@ -12,8 +13,6 @@ const toast = useToast()
 const router = useRouter()
 const authStore = useAuthStore()
 
-const username = ref('')
-const password = ref('')
 const submitError = ref('')
 const submitSuccess = ref('')
 const isSubmitting = ref(false)
@@ -44,21 +43,23 @@ const socialLoginMethods = [
   },
 ]
 
-const handleLogin = async () => {
+const handleLogin = async (values) => {
   submitError.value = ''
   submitSuccess.value = ''
   isSubmitting.value = true
 
   try {
-    console.log('Submitting with:', username.value, password.value)
+    console.log('Submitting with:', values.email)
     const res = await api.post('/login', {
-      username: username.value,
-      password: password.value,
+      username: values.email,
+      password: values.password,
     })
 
     if (res.data.token) {
       const decoded = jwtDecode(res.data.token)
+      console.log('Decoded JWT:', decoded)
       authStore.setUser(decoded)
+      console.log('User ', authStore.user)
       submitSuccess.value = res.data.message || 'Đăng nhập thành công'
 
       if (decoded.role === 'admin' || decoded.role === 'staff') {
@@ -84,7 +85,7 @@ const handleSocialLogin = (provider) => {
 
 <template>
   <section
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_20%_30%,#4f90bf,transparent_45%),radial-gradient(circle_at_80%_10%,#2f5d87,transparent_35%),linear-gradient(140deg,#0e2a47,#1a4f7d)] px-[14px] py-6 sm:px-6"
+    class="relative flex min-h-screen items-center justify-center overflow-hidden px-[14px] py-6 sm:px-6"
   >
     <div
       class="absolute -right-[70px] -top-[90px] h-80 w-80 rounded-full bg-[#b7deff] opacity-25 blur-[2px]"
@@ -99,7 +100,6 @@ const handleSocialLogin = (provider) => {
       <div class="mb-5 form-header">
         <p class="m-0 text-xs font-bold tracking-[1.8px] text-[#0f6cbf]">E-LIBRARY CTU</p>
         <h1 class="my-2 text-[26px] leading-[1.2] text-[#13263a] sm:text-[30px]">Dang nhap</h1>
-        <p class="m-0 text-[#5e7186]">Su dung email va mat khau de truy cap tai khoan cua ban.</p>
       </div>
 
       <Form class="grid gap-[14px]" :validation-schema="loginSchema" @submit="handleLogin">
@@ -111,21 +111,26 @@ const handleSocialLogin = (provider) => {
             type="email"
             placeholder="you@example.com"
             class="w-full rounded-xl border border-[#d4dce5] px-3 py-[11px] text-[15px] text-[#13263a] transition focus:border-[#0f6cbf] focus:outline-none focus:ring-4 focus:ring-[#0f6cbf]/20"
-            v-model="username"
           />
           <ErrorMessage name="email" class="text-[13px] text-[#d63649]" />
         </div>
 
         <div class="grid gap-[7px]">
           <label for="password" class="text-sm font-semibold text-[#13263a]">Mat khau</label>
-          <Field
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Nhap mat khau"
-            class="w-full rounded-xl border border-[#d4dce5] px-3 py-[11px] text-[15px] text-[#13263a] transition focus:border-[#0f6cbf] focus:outline-none focus:ring-4 focus:ring-[#0f6cbf]/20"
-            v-model="password"
-          />
+          <Field name="password" v-slot="{ field, handleChange, handleBlur }">
+            <Password
+              inputId="password"
+              placeholder="Nhap mat khau"
+              :modelValue="field.value"
+              @update:modelValue="handleChange"
+              @blur="handleBlur"
+              class="w-full"
+              inputClass="w-full rounded-xl border border-[#d4dce5] px-3 py-[11px] text-[15px] text-[#13263a] transition focus:border-[#0f6cbf] focus:outline-none focus:ring-4 focus:ring-[#0f6cbf]/20"
+              toggleMask
+              :feedback="false"
+            />
+          </Field>
+
           <ErrorMessage name="password" class="text-[13px] text-[#d63649]" />
         </div>
 

@@ -16,7 +16,9 @@ onMounted(async () => {
     // You can use router.push('/login') here if you have access to the router instance
   } else {
     console.log('User is authenticated:', authStore.user)
-    if (authStore.isStaffOrAdmin) router.push('/admin/dashboard')
+    if (authStore.isStaffOrAdmin && authStore.user) {
+      router.push('/admin/dashboard')
+    }
   }
 })
 </script>
@@ -24,7 +26,7 @@ onMounted(async () => {
 <template>
   <section class="app-container bg-gray-100 min-h-screen">
     <Toast position="top-right" />
-    <ConfirmDialog></ConfirmDialog>
+    <!-- <ConfirmDialog></ConfirmDialog> -->
     <RouterView />
   </section>
 </template>

@@ -16,6 +16,8 @@ export const getAllBooks = async ({
   // 1. Build the dynamic Mongoose query object
   const query = {};
 
+  // console.log("Received filters:", { types, authors, publishers, keyword });
+  // console.log("page:", page, "limit:", limit);
   if (types) {
     // Convert "Fiction,Science" into an array of case-insensitive RegEx for flexible matching
     const typeArray = types
@@ -63,7 +65,6 @@ export const getAllBooks = async ({
 
   const [items, total] = await Promise.all([
     await Book.find(query)
-      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parsedLimit)
       .populate("idNXB", "tenNXB"),

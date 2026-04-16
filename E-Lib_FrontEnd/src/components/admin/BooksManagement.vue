@@ -4,6 +4,9 @@ import api from '@/api/axios.js'
 import { useAppToast } from '@/utils/useAppToast'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
+import IsLoading from '@/components/IsLoading.vue'
+import Select from 'primevue/select'
+import Paginator from 'primevue/paginator'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import Image from 'primevue/image'
@@ -16,11 +19,31 @@ import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
+import { sm } from '@primeuix/themes/aura/badge'
 
 const { addToast } = useAppToast()
 
 const books = ref([])
 const publishers = ref([])
+
+// fitler state
+const publisherNames = ref([])
+const types = ref([])
+const authors = ref([])
+const selectedPublisher = ref()
+const selectedType = ref()
+const selectedAuthor = ref()
+
+// search state
+const searchQuery = ref('')
+const suggestions = ref([])
+const showSuggestions = ref(false)
+let suggestTimeout = null
+
+// load book report
+const isLoadedReport = ref(false)
+const bookReport = ref(null)
+
 const loading = ref(false)
 const localQuery = ref('')
 const selectedBook = ref(null)
@@ -31,6 +54,14 @@ const relatedPreviews = ref([])
 
 const fallbackCover =
   'https://res.cloudinary.com/depaiphq0/image/upload/v1775474472/pngtree-an-open-book-is-shown-with-a-yellow-and-blue-logo-png-image_15675075_f99kmp.png'
+
+// --- Trạng thái Phân trang (Pagination State) ---
+const first = ref(0) // Vị trí index bắt đầu (PrimeVue sử dụng)
+const rows = ref(12) // Số lượng sách trên 1 trang (limit)
+const totalRecords = ref(0) // Tổng số sách thỏa mãn điều kiện (Backend phải trả về số này)
+
+// ---Trạng thái Bộ lọc (Filter State) ---
+const currentFilters = ref({ types: [], authors: [], publishers: [] })
 
 const validationSchema = yup.object({
   tenSach: yup.string().required('Tên sách là bắt buộc').min(2, 'Tên sách phải có ít nhất 2 ký tự'),
@@ -80,26 +111,6 @@ const { value: biaSach, errorMessage: biaSachError } = useField('biaSach')
 const { value: hinhAnh, errorMessage: hinhAnhError } = useField('hinhAnh')
 const { value: theLoai, errorMessage: theLoaiError } = useField('theLoai')
 
-const normalizedBooks = computed(() =>
-  books.value.map((book) => ({
-    ...book,
-    biaSach: book.biaSach || fallbackCover,
-    tenNXB: book.idNXB?.tenNXB || 'N/A',
-  })),
-)
-
-const filteredBooks = computed(() => {
-  const keyword = localQuery.value.trim().toLowerCase()
-  if (!keyword) return normalizedBooks.value
-
-  return normalizedBooks.value.filter((book) =>
-    [book.tenSach, book.tacGia, book.tenNXB, book.theLoai]
-      .join(' ')
-      .toLowerCase()
-      .includes(keyword),
-  )
-})
-
 const displayedRelatedImages = computed(() => {
   return relatedPreviews.value || []
 })
@@ -116,6 +127,33 @@ const stockSeverity = (remaining) => {
   if (value <= 5) return 'warn'
 
   return 'success'
+}
+
+// Khi Paginator thay đổi trang
+const onPageChange = (event) => {
+  first.value = event.first // Cập nhật vị trí bắt đầu mới
+  rows.value = event.rows
+  fetchBooks() // Gọi lại API để lấy dữ liệu của trang mới
+}
+
+// Khi người dùng chọn bộ lọc mới
+const handleFilter = () => {
+  fetchBooks() // Gọi lại API với điều kiện lọc mới
+}
+
+// Xử lý tắt gợi ý khi click ra ngoài input
+const hideSuggestions = () => {
+  // Dùng setTimeout nhỏ để sự kiện click vào gợi ý kịp chạy trước khi input mất focus
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
+}
+
+// Xử lý khi user nhấn Enter để tìm kiếm toàn bộ
+const onSearchEnter = () => {
+  showSuggestions.value = false // Ẩn gợi ý
+  first.value = 0
+  fetchBooks() // Gọi hàm fetchBooks đầy đủ
 }
 
 const onCoverChange = (event) => {
@@ -135,6 +173,7 @@ const onRelatedChange = (event) => {
     ...files.map((file) => URL.createObjectURL(file)),
   ]
 }
+
 const handleRemoveBookCover = () => {
   biaSach.value = null
   coverPreview.value = ''
@@ -177,6 +216,8 @@ const closeDialog = () => {
   visibleDialog.value = false
   coverPreview.value = ''
   relatedPreviews.value = []
+  isLoadedReport.value = false
+  bookReport.value = null
   // URL.revokeObjectURL()
   resetForm()
 }
@@ -224,7 +265,7 @@ const handleFormSubmit = handleSubmit(async (formData) => {
     }
 
     closeDialog()
-    await loadBooks()
+    await fetchBooks()
   } catch (error) {
     addToast('error', 'Lỗi', error.response?.data?.message || 'Không thể lưu thông tin sách')
   } finally {
@@ -232,57 +273,201 @@ const handleFormSubmit = handleSubmit(async (formData) => {
   }
 })
 
-const loadBooks = async () => {
+// Hàm gọi API lấy gợi ý (Debounce ngắn: 300ms)
+const fetchSuggestions = () => {
+  clearTimeout(suggestTimeout)
+
+  if (!searchQuery.value.trim()) {
+    suggestions.value = []
+    showSuggestions.value = false
+    return
+  }
+
+  suggestTimeout = setTimeout(async () => {
+    try {
+      const response = await api.get(`/books/suggestions?keyword=${searchQuery.value}`)
+      suggestions.value = response.data
+      showSuggestions.value = true
+    } catch (error) {
+      console.error('Lỗi tải gợi ý:', error)
+    }
+  }, 300)
+}
+
+// --- 3. Hàm gọi API trung tâm ---
+const fetchBooks = async () => {
+  isLoading.value = true
   try {
-    loading.value = true
-    const res = await api.get('/books')
-    books.value = Array.isArray(res.data?.books) ? res.data.books : []
-  } catch (error) {
-    addToast('error', 'Lỗi', error.response?.data?.message || 'Không thể tải danh sách sách')
+    // Tính toán số trang (page) hiện tại. Backend thường dùng index bắt đầu từ 1.
+    const currentPage = Math.floor(first.value / rows.value) + 1
+
+    // Định nghĩa các Query Parameters sẽ gửi lên Express
+    const params = {
+      page: currentPage,
+      limit: rows.value,
+      // Nối các mảng thành chuỗi phân cách bằng dấu phẩy (ví dụ: "Tiểu thuyết,Khoa học")
+      keyword: searchQuery.value.trim(),
+      types: selectedType.value ? selectedType.value + ',' : '',
+      authors: selectedAuthor.value ? selectedAuthor.value + ',' : '',
+      publishers: selectedPublisher.value ? selectedPublisher.value + ',' : '',
+    }
+
+    // Axios sẽ tự động chuyển object params thành query string:
+    // GET /books?page=1&limit=12&types=...
+    const response = await api.get('/books', { params })
+
+    // Cập nhật danh sách sách cho trang hiện tại và tổng số record
+    books.value = response.data.books
+    totalRecords.value = response.data.totalRecords // QUAN TRỌNG: Backend cần tính và trả về giá trị này
+
+    // Chỉ cập nhật danh sách các bộ lọc (publishers, types, authors) trong lần render đầu tiên
+    // Nếu BE của bạn tách riêng API lấy danh sách filter, bạn nên tách ra hàm riêng.
+    if (types.value.length === 0) {
+      publisherNames.value = response.data.publisherNames || []
+      types.value = response.data.types || []
+      authors.value = response.data.authors || []
+      console.log('Loaded filter options:', {
+        publisherNames: publisherNames.value,
+        types: types.value,
+        authors: authors.value,
+      })
+    }
+  } catch (err) {
+    console.error('Lỗi khi tải dữ liệu sách:', err)
   } finally {
-    loading.value = false
+    isLoading.value = false
+  }
+}
+
+const loadReport = async (bookId) => {
+  try {
+    const response = await api.get(`/books/${bookId}/report`)
+    bookReport.value = response.data
+    console.log('Loaded book report:', bookReport.value)
+
+    addToast('success', 'Thành công', 'Báo cáo sách đã được tải')
+    isLoadedReport.value = true
+  } catch (err) {
+    console.error('Lỗi khi tải báo cáo sách:', err)
+    addToast('error', 'Lỗi', 'Không thể tải báo cáo sách')
   }
 }
 
 const loadPublishers = async () => {
   try {
-    const res = await api.get('/publishers')
-    publishers.value = Array.isArray(res.data) ? res.data : []
-  } catch (error) {
-    addToast('error', 'Lỗi', 'Không thể tải danh sách nhà xuất bản')
+    const response = await api.get('/publishers')
+    publishers.value = response.data || []
+    console.log('Loaded publishers:', publishers.value)
+  } catch (err) {
+    console.error('Lỗi khi tải dữ liệu nhà xuất bản:', err)
   }
 }
 
+// Gọi data lần đầu khi component được mount
 onMounted(async () => {
-  await Promise.all([loadBooks(), loadPublishers()])
+  await fetchBooks()
+  await loadPublishers()
 })
 </script>
 
 <template>
-  <div class="space-y-3">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end px-2">
-      <span class="p-input-icon-left w-full sm:w-80">
-        <InputText
-          v-model="localQuery"
-          class="h-10 w-full"
-          placeholder="Tìm theo tên sách, tác giả, NXB..."
+  <div class="">
+    <div class="header flex items-center justify-between">
+      <!-- header right side -->
+      <div class="flex justify-center text-sm">
+        <Select
+          v-model="selectedPublisher"
+          :options="publisherNames"
+          placeholder="NXB"
+          showClear
+          class="w-[7.6rem] mx-1 !text-sm"
+          @change="handleFilter"
         />
-      </span>
+        <Select
+          v-model="selectedAuthor"
+          :options="authors"
+          placeholder="Tác giả"
+          showClear
+          class="w-[7.6rem] mx-1 text-sm"
+          @change="handleFilter"
+        />
+        <Select
+          v-model="selectedType"
+          :options="types"
+          placeholder="Thể loại"
+          showClear
+          class="w-[7.6rem] mx-1 text-sm"
+          @change="handleFilter"
+        />
+      </div>
+      <!-- header left side -->
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end px-2">
+        <!-- search bar -->
+        <div class="flex items-center justify-center mt-3">
+          <div class="relative w-[24rem] h-[3.2rem] text-sm">
+            <input
+              v-model="searchQuery"
+              @input="fetchSuggestions"
+              @keyup.enter="onSearchEnter"
+              @focus="showSuggestions = suggestions.length > 0"
+              @blur="hideSuggestions"
+              type="text"
+              placeholder="Tìm kiếm theo tên, tác giả..."
+              class="w-full rounded-md border border-slate-300 px-4 py-2 text-slate-700 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 shadow-sm"
+            />
+            <span
+              class="absolute right-3 top-2 text-slate-400 px-2 py-1 rounded-md hover:bg-slate-200 cursor-pointer"
+              @click="fetchSuggestions"
+              ><i class="pi pi-search"></i
+            ></span>
 
-      <Button
-        label="Thêm sách mới"
-        icon="pi pi-plus"
-        class="h-10 border-none bg-blue-600 text-white hover:bg-blue-500"
-        @click="openDialog(null)"
-      ></Button>
+            <ul
+              v-if="showSuggestions && suggestions.length > 0"
+              class="absolute left-0 top-full mt-1 w-full max-h-80 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-xl z-50 divide-y divide-slate-100"
+            >
+              <li
+                v-for="book in suggestions"
+                :key="book._id"
+                @mousedown.prevent="goToBookDetail(book._id)"
+                class="flex items-center gap-3 p-3 cursor-pointer hover:bg-orange-50 transition-colors"
+              >
+                <div
+                  class="h-12 w-8 flex-shrink-0 bg-slate-100 flex items-center justify-center overflow-hidden rounded-sm"
+                >
+                  <img
+                    v-if="book.biaSach"
+                    :src="book.biaSach"
+                    alt="Bìa"
+                    class="h-full object-cover"
+                  />
+                  <span v-else class="text-xs">📚</span>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-slate-800 truncate">{{ book.tenSach }}</p>
+                  <p class="text-xs text-slate-500 truncate">{{ book.tacGia }}</p>
+                </div>
+              </li>
+
+              <li class="p-2 text-center border-t border-slate-100">
+                <span class="text-xs text-slate-400">Nhấn Enter để xem tất cả kết quả</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <Button
+          label="Thêm sách mới"
+          icon="pi pi-plus"
+          class="h-10 border-none bg-blue-600 text-white hover:bg-blue-500"
+          @click="openDialog(null)"
+        ></Button>
+      </div>
     </div>
 
     <DataTable
-      :value="filteredBooks"
+      :value="books"
       dataKey="_id"
-      paginator
-      :rows="12"
-      :rowsPerPageOptions="[12, 24, 36]"
       stripedRows
       removableSort
       :loading="loading"
@@ -293,7 +478,7 @@ onMounted(async () => {
       <Column header="Bìa sách" style="width: 110px">
         <template #body="slotProps">
           <Image
-            :src="slotProps.data.biaSach"
+            :src="slotProps.data.biaSach || fallbackCover"
             alt="Bia sach"
             imageClass="h-16 w-12 rounded object-cover border border-slate-200"
             preview
@@ -303,7 +488,7 @@ onMounted(async () => {
 
       <Column field="tenSach" header="Tên sách" sortable />
       <Column field="tacGia" header="Tác giả" sortable />
-      <Column field="tenNXB" header="Nhà xuất bản" sortable />
+      <Column field="idNXB.tenNXB" header="Nhà xuất bản" sortable />
 
       <Column field="conLai" header="Còn lại" sortable style="width: 120px">
         <template #body="slotProps">
@@ -335,6 +520,16 @@ onMounted(async () => {
         <div class="py-6 text-center text-sm text-slate-500">Không tìm thấy dữ liệu phù hợp.</div>
       </template>
     </DataTable>
+    <div class="my-4 w-full flex justify-center" v-show="totalRecords > 0">
+      <Paginator
+        v-model:first="first"
+        :rows="rows"
+        :totalRecords="totalRecords"
+        @page="onPageChange"
+        template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+        class="w-full mx-6"
+      />
+    </div>
 
     <Dialog
       v-model:visible="visibleDialog"
@@ -346,7 +541,7 @@ onMounted(async () => {
       <Tabs value="0">
         <TabList>
           <Tab value="0">Thông tin</Tab>
-          <Tab v-if="selectedBook" value="1">Ghi nhận</Tab>
+          <Tab v-if="selectedBook" value="1">Thống kê</Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="0">
@@ -559,7 +754,40 @@ onMounted(async () => {
           <TabPanel v-if="selectedBook" value="1">
             <div class="loan-infor-container">
               <div class="loan-info min-h-[300px]">
-                <h2>Thông tin mượn sách</h2>
+                <h2>Thống kê số lượng các trạng thái mượn của sách</h2>
+                <Button
+                  v-if="!isLoadedReport"
+                  severity="success"
+                  class="mt-4 mx-auto"
+                  label="Tải báo cáo"
+                  @click="loadReport(selectedBook._id)"
+                ></Button>
+
+                <div
+                  v-if="isLoadedReport"
+                  class="mt-4 rounded border border-slate-200 bg-slate-50 p-4"
+                >
+                  <p>
+                    <span class="text-slate-700 font-bold">Số lượng đang mượn:</span>
+                    {{ bookReport.borrowingQuantity }}
+                  </p>
+                  <p>
+                    <span class="text-slate-700 font-bold">Số lượng quá hạn:</span>
+                    {{ bookReport.overdueQuantity }}
+                  </p>
+                  <p>
+                    <span class="text-slate-700 font-bold">Số lượng đang chờ duyệt:</span>
+                    {{ bookReport.registerQuantity }}
+                  </p>
+                  <p>
+                    <span class="text-slate-700 font-bold">Số lượng đang chờ nhận:</span>
+                    {{ bookReport.waitingQuantity }}
+                  </p>
+                  <p>
+                    <span class="text-slate-700 font-bold">Số lượng mượn:</span>
+                    {{ bookReport.loanQuantity }}
+                  </p>
+                </div>
               </div>
               <Button type="button" label="Đóng" severity="secondary" @click="closeDialog"></Button>
             </div>

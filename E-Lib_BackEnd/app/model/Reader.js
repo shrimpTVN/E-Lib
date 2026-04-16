@@ -11,7 +11,7 @@ const readerSchema = new mongoose.Schema(
     dienThoai: { type: String, required: true },
     diaChi: { type: String },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, default: "elib" }, // Remember to hash this with bcrypt!
+    password: { type: String, default: "123456" }, // Remember to hash this with bcrypt!
     diemTichLuy: { type: Number, default: 0 },
     ngaySinh: { type: Date },
     tienPhat: { type: Number, default: 0 },

@@ -27,7 +27,7 @@ const staff = ref({
   chucVu: '',
   dienThoai: '',
   diaChi: '',
-  ngaySinh: '',
+  ngaySinh: null,
   username: '',
   vaiTro: '',
   isActive: true,
@@ -36,7 +36,7 @@ const staff = ref({
 const profileSchema = yup.object({
   hoTen: yup.string().trim().required('Vui lòng nhập họ và tên.'),
   dienThoai: yup.string().trim().required('Vui lòng nhập số điện thoại.'),
-  ngaySinh: yup.string().trim().required('Vui lòng nhập ngày sinh.'),
+  ngaySinh: yup.date().required('Vui lòng nhập ngày sinh.'),
   diaChi: yup.string().nullable(),
 })
 

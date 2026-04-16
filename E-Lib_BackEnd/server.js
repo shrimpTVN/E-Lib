@@ -3,6 +3,8 @@ import app from "./app.js";
 import config from "./app/config/index.js";
 // import MongoDB from "./app/utils/mongodb.util.js";
 import mongoose from "mongoose";
+import cron from "node-cron";
+import * as LoanService from "./app/service/loan.service.js";
 
 // define a method that will run up node server with mongodb server
 async function startServer() {
@@ -20,6 +22,17 @@ async function startServer() {
     console.log("Cannot connect to the database!", error);
     process.exit();
   }
+
+  cron.schedule(
+    "0 0 * * *",
+    async () => {
+      await LoanService.processDailyPenalties();
+    },
+    {
+      scheduled: true,
+      timezone: "Asia/Ho_Chi_Minh", // Crucial: Ensure it runs at local midnight!
+    },
+  );
 }
 // Run server immediately => connect to DB and config server port
 startServer();

@@ -104,7 +104,7 @@ const handleRegister = async (values) => {
 
 <template>
   <section
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_20%_30%,#4f90bf,transparent_45%),radial-gradient(circle_at_80%_10%,#2f5d87,transparent_35%),linear-gradient(140deg,#0e2a47,#1a4f7d)] px-[14px] py-6 sm:px-6"
+    class="relative flex min-h-screen items-center justify-center overflow-hidden px-[14px] py-6 sm:px-6"
   >
     <div
       class="relative z-10 w-full max-w-[560px] rounded-[18px] bg-white px-[18px] py-[22px] shadow-[0_30px_65px_rgba(5,17,28,0.35)] sm:rounded-3xl sm:p-7"
@@ -112,7 +112,6 @@ const handleRegister = async (values) => {
       <div class="mb-5 form-header">
         <p class="m-0 text-xs font-bold tracking-[1.8px] text-[#0f6cbf]">E-LIBRARY CTU</p>
         <h1 class="my-2 text-[26px] leading-[1.2] text-[#13263a] sm:text-[30px]">Dang ky</h1>
-        <p class="m-0 text-[#5e7186]">Tao tai khoan doc gia de su dung he thong muon sach.</p>
       </div>
 
       <Form class="grid gap-[14px]" :validation-schema="registerSchema" @submit="handleRegister">

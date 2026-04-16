@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth.store'
 const emit = defineEmits(['handleChangeTag'])
 import { useRouter } from 'vue-router'
 import Image from 'primevue/image'
+import { formatCurrency } from '@/utils/useFormat.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -11,6 +12,10 @@ const authStore = useAuthStore()
 const props = defineProps({
   user: {
     type: Object,
+    required: true,
+  },
+  countBanDay: {
+    type: Number,
     required: true,
   },
 })
@@ -48,8 +53,10 @@ const handleChangeTag = (tagName) => {
           {{ props.user.hoLot + ' ' + props.user.ten }}
         </h3>
         <p class="text-slate-600 text-base">Điểm tích lũy: {{ props.user.diemTichLuy }}</p>
-        <p class="text-slate-600 text-base">Số tiền phạt: {{ props.user.tienPhat }}</p>
-        <p class="text-slate-600 text-base">Số ngày phạt: 0</p>
+        <p class="text-slate-600 text-base">
+          Số tiền phạt: {{ formatCurrency(props.user.tienPhat) }}
+        </p>
+        <p class="text-slate-600 text-base">Số ngày phạt: {{ props.countBanDay }}</p>
         <div class="w-[80%] mx-auto bg-gray-400 h-[1px] mt-10"></div>
       </div>
 
