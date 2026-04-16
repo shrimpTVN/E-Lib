@@ -115,7 +115,7 @@ const openDialog = (reader, dialog) => {
 const handleFormInfoSubmit = handleInfoSubmit(async (formData) => {
   isLoading.value = true
   try {
-    if (!selectedReader.value) {
+    if (selectedReader.value) {
       const updateData = {
         hoLot: formData.hoLot,
         ten: formData.ten,

@@ -218,7 +218,7 @@ export const updateLoanStatus = async (req, res, next) => {
         });
       }
 
-      book.isReturned = true;
+      loan.isReturned = true;
       book.conLai += 1;
     }
 
@@ -237,6 +237,7 @@ export const updateLoanStatus = async (req, res, next) => {
     }
 
     const updated = await loan.save();
+    await book.save();
     res.status(200).json(updated);
   } catch (error) {
     next(new AppError(error.message, 500));

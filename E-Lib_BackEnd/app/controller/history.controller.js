@@ -26,15 +26,15 @@ export const getAllHistoriesByReaderId = async (req, res, next) => {
   try {
     const userId = req.params.id;
 
-    console.log("getAllHistoriesByReaderId called with id:", userId);
+    // console.log("getAllHistoriesByReaderId called with id:", userId);
 
     if (!isValidObjectId(userId)) {
-      console.log("Invalid reader id, skipping history query:", userId);
+      // console.log("Invalid reader id, skipping history query:", userId);
       return next(new AppError("User ID is required", 400));
     }
 
     const history = await historyService.getAllHistoriesByReaderId(userId);
-    console.log("History found:", history);
+    // console.log("History found:", history);
     if (!history) {
       return next(new AppError("History not found", 404));
     }

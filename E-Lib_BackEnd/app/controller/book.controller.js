@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import * as bookService from "../service/book.service.js";
 import * as publisherService from "../service/publisher.service.js";
+import * as loanService from "../service/loan.service.js";
 import AppError from "../utils/ApiError.js";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -32,7 +33,6 @@ export const getAllBooks = async (req, res, next) => {
       keyword: req.query.keyword,
       types: req.query.types,
       authors: req.query.authors,
-      keyword: req.query.keyword,
       publishers: req.query.publishers,
       page: req.query.page,
       limit: req.query.limit,
@@ -68,6 +68,20 @@ export const getBookById = async (req, res, next) => {
     }
     const relatedBooks = await bookService.getRelatedBooks(book);
     res.status(200).json({ book: book, relatedBooks: relatedBooks });
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+};
+
+export const getBookReport = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return next(new AppError("Book ID không hợp lệ", 400));
+    }
+
+    const report = await loanService.getBookReportByBookId(id);
+    res.status(200).json(report);
   } catch (error) {
     next(new AppError(error.message, 500));
   }

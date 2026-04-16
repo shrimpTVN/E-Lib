@@ -20,7 +20,7 @@ export const getAllHistoriesByReaderId = async (readerId) => {
   const histories = await History.find({ idDocGia: readerId }).sort({
     ngayTao: -1,
   });
-  console.log(`Found ${histories.length} histories for reader ${readerId}`);
+  // console.log(`Found ${histories.length} histories for reader ${readerId}`);
   return histories;
 };
 

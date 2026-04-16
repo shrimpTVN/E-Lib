@@ -18,7 +18,8 @@ export const getAllLoans = async () => {
   return await Loan.find()
     .sort({ updatedAt: -1 })
     .populate("idDocGia", "hoLot ten")
-    .populate("idSach", "tenSach");
+    .populate("idSach", "tenSach")
+    .populate("TRANG_THAI.idNhanVien", "hoTen");
 };
 
 export const getAllLoanByReaderId = async (idDocGia) => {
@@ -48,6 +49,35 @@ export const getOverdueLoanByReaderId = async (idDocGia) => {
     isReturned: false,
   });
   return cnt;
+};
+
+export const getBookReportByBookId = async (idSach) => {
+  const loanQuantity = await Loan.countDocuments({ idSach: idSach });
+  const overdueQuantity = await Loan.countDocuments({
+    idSach: idSach,
+    isQuaHan: true,
+    isReturned: false,
+  });
+  const registerQuantity = await Loan.countDocuments({
+    idSach: idSach,
+    trangThaiHienTai: "Chờ duyệt",
+  });
+  const waitingQuantity = await Loan.countDocuments({
+    idSach: idSach,
+    trangThaiHienTai: "Chờ nhận",
+  });
+  const borrowingQuantity = await Loan.countDocuments({
+    idSach: idSach,
+    trangThaiHienTai: "Đang mượn",
+  });
+
+  return {
+    loanQuantity,
+    overdueQuantity,
+    registerQuantity,
+    waitingQuantity,
+    borrowingQuantity,
+  };
 };
 
 export const hasUserBorrowedBook = async (idDocGia, idSach) => {
